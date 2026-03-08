@@ -45,6 +45,7 @@ export default async function JewelryPage() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem" }}>
             {products.map(product => (
+              <div key={product.id} className="product-grid-item">
               <ProductCard
                 key={product.id}
                 id={product.id}
@@ -56,6 +57,7 @@ export default async function JewelryPage() {
                 imageUrl={product.images[0]?.url ?? ""}
                 variants={product.variants.map(v => ({ id: v.id, optionLabel: v.optionLabel, price: v.price, compareAtPrice: v.compareAtPrice, stock: v.stock }))}
               />
+              </div>
             ))}
           </div>
         )}

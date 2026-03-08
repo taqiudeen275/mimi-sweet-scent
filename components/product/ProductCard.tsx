@@ -52,6 +52,7 @@ export function ProductCard({
       price: cheapest.price,
       imageUrl,
       quantity: 1,
+      maxStock: cheapest.stock,
     });
     setTimeout(() => setAdding(false), 800);
   };

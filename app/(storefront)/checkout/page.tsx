@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useCart } from "@/contexts/cart-context";
 import { formatPrice } from "@/lib/utils";
-import type { Metadata } from "next";
 
 // Mobile Money provider options for Ghana
 const MOMO_PROVIDERS = [
@@ -46,15 +44,13 @@ export default function CheckoutPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<"form" | "pending">("form");
-  const [payRef, setPayRef] = useState<string | null>(null);
 
   // Redirect if cart empty
   useEffect(() => {
-    if (items.length === 0 && step === "form") {
+    if (items.length === 0) {
       router.push("/shop");
     }
-  }, [items, step, router]);
+  }, [items, router]);
 
   const set = (key: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -98,102 +94,27 @@ export default function CheckoutPage() {
         return;
       }
 
-      setPayRef(data.reference);
-      setStep("pending");
       clearCart();
+      router.push(`/checkout/success?ref=${encodeURIComponent(data.reference)}`);
     } catch {
       setError("Network error. Please check your connection and try again.");
       setSubmitting(false);
     }
   };
 
-  if (step === "pending") {
-    return (
-      <main style={{
-        minHeight: "70vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "4rem 2rem",
-        background: "var(--color-cream)",
-      }}>
-        <div style={{
-          maxWidth: "480px",
-          width: "100%",
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "1.5rem",
-        }}>
-          {/* Spinner */}
-          <div style={{
-            width: "64px",
-            height: "64px",
-            border: "2px solid var(--color-gray-200)",
-            borderTopColor: "var(--color-primary)",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-          }} />
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
-          <h1 style={{
-            fontFamily: "var(--font-cormorant), Georgia, serif",
-            fontSize: "2rem",
-            fontWeight: 400,
-            color: "var(--color-black)",
-          }}>
-            Awaiting Payment
-          </h1>
-          <p style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
-            fontSize: "0.875rem",
-            lineHeight: 1.7,
-            color: "var(--color-gray-600)",
-          }}>
-            A payment prompt has been sent to your phone (<strong>{form.momoPhone}</strong>).
-            Please approve it on your device to complete your order.
-          </p>
-          {payRef && (
-            <p style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
-              fontSize: "0.75rem",
-              color: "var(--color-gray-400)",
-              letterSpacing: "0.05em",
-            }}>
-              Reference: {payRef}
-            </p>
-          )}
-          <p style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
-            fontSize: "0.75rem",
-            color: "var(--color-gray-600)",
-            lineHeight: 1.6,
-          }}>
-            You will receive a confirmation email at <strong>{form.email}</strong> once payment is confirmed.
-          </p>
-          <Link
-            href="/"
-            style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
-              fontSize: "0.6875rem",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--color-primary)",
-              textDecoration: "none",
-              borderBottom: "1px solid var(--color-primary)",
-            }}
-          >
-            Continue Shopping
-          </Link>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main style={{ background: "var(--color-white)", minHeight: "100vh" }}>
-      <div style={{
+      <style>{`
+        @media (max-width: 860px) {
+          .checkout-grid { grid-template-columns: 1fr !important; }
+          .checkout-summary { position: static !important; }
+        }
+        @media (max-width: 560px) {
+          .checkout-name-row, .checkout-contact-row, .checkout-city-row { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+      <div className="checkout-grid" style={{
         maxWidth: "1100px",
         margin: "0 auto",
         padding: "3rem 2rem 5rem",
@@ -218,7 +139,7 @@ export default function CheckoutPage() {
             {/* Contact */}
             <section>
               <SectionTitle>Contact Information</SectionTitle>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="checkout-name-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <Field label="First Name" required>
                   <input
                     className="input"
@@ -240,7 +161,7 @@ export default function CheckoutPage() {
                   />
                 </Field>
               </div>
-              <div style={{ marginTop: "1rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="checkout-contact-row" style={{ marginTop: "1rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <Field label="Email Address" required>
                   <input
                     className="input"
@@ -277,7 +198,7 @@ export default function CheckoutPage() {
                     placeholder="123 Independence Avenue"
                   />
                 </Field>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div className="checkout-city-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                   <Field label="City" required>
                     <input
                       className="input"
@@ -416,7 +337,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Right: order summary */}
-        <div style={{
+        <div className="checkout-summary" style={{
           position: "sticky",
           top: "calc(64px + 2rem)",
           background: "var(--color-cream)",

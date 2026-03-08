@@ -77,6 +77,11 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <main style={{ background: "var(--color-white)" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .pdp-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+        }
+      `}</style>
       {/* Breadcrumb */}
       <div style={{
         maxWidth: "1280px",
@@ -111,7 +116,9 @@ export default async function ProductPage({ params }: Props) {
         gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
         gap: "5rem",
         alignItems: "start",
-      }}>
+      }}
+      className="pdp-grid"
+      >
         {/* Left: gallery */}
         <ImageGallery
           images={product.images.length > 0

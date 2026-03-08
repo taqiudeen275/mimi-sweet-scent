@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CartProvider } from "@/contexts/cart-context";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { ToastContainer } from "@/components/ui/ToastContainer";
 import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
@@ -56,6 +57,7 @@ export default function StorefrontLayout({ children }: { children: React.ReactNo
         </footer>
       </div>
       <CartDrawer />
+      <ToastContainer />
     </CartProvider>
   );
 }

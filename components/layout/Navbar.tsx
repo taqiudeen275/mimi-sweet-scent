@@ -1,12 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { useCart } from "@/contexts/cart-context";
 
 export function Navbar() {
   const { totalItems, openDrawer } = useCart();
+  const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+
+  const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "MANAGER";
+  const isLoggedIn = !!session?.user;
+
+  // Close account dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, []);
 
   return (
     <header
@@ -45,7 +68,9 @@ export function Navbar() {
                   fontWeight: 500,
                   color: "var(--color-black)",
                   textDecoration: "none",
+                  position: "relative",
                 }}
+                className="nav-link"
               >
                 {label}
               </Link>
@@ -54,7 +79,7 @@ export function Navbar() {
 
           {/* Hamburger — mobile only */}
           <button
-            onClick={() => setMenuOpen((o) => !o)}
+            onClick={() => setMenuOpen(o => !o)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             className="mobile-hamburger"
             style={{
@@ -93,17 +118,148 @@ export function Navbar() {
 
         {/* Right icons */}
         <div style={{ display: "flex", gap: "1.25rem", alignItems: "center", justifyContent: "flex-end" }}>
-          <Link
-            href="/account/login"
-            aria-label="Account"
-            style={{ color: "var(--color-black)", display: "flex", alignItems: "center" }}
-          >
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </Link>
+          {/* Admin badge */}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              style={{
+                fontFamily: "var(--font-montserrat), sans-serif",
+                fontSize: "0.5rem",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                fontWeight: 700,
+                color: "var(--color-primary)",
+                border: "1px solid var(--color-primary)",
+                padding: "0.2rem 0.5rem",
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+              }}
+              className="desktop-nav"
+            >
+              Admin
+            </Link>
+          )}
 
+          {/* Account dropdown */}
+          <div ref={accountRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => setAccountOpen(o => !o)}
+              aria-label="Account menu"
+              style={{
+                background: "none", border: "none",
+                cursor: "pointer", padding: 0,
+                color: "var(--color-black)",
+                display: "flex", alignItems: "center",
+                gap: "0.375rem",
+              }}
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              {/* Show name initial if logged in */}
+              {isLoggedIn && status !== "loading" && (
+                <span style={{
+                  width: "18px", height: "18px",
+                  background: "var(--color-primary)",
+                  borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "0.5rem", fontWeight: 700,
+                  color: "var(--color-white)",
+                  fontFamily: "var(--font-montserrat), sans-serif",
+                  lineHeight: 1,
+                }}>
+                  {(session?.user?.name ?? session?.user?.email ?? "U").charAt(0).toUpperCase()}
+                </span>
+              )}
+            </button>
+
+            {/* Dropdown */}
+            {accountOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 0.75rem)", right: 0,
+                background: "var(--color-white)",
+                border: "1px solid var(--color-gray-200)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+                minWidth: "180px",
+                zIndex: 50,
+                animation: "fadeDropdown 150ms ease",
+              }}>
+                {isLoggedIn ? (
+                  <>
+                    {session?.user?.name && (
+                      <div style={{
+                        padding: "0.875rem 1.25rem 0.625rem",
+                        borderBottom: "1px solid var(--color-gray-200)",
+                      }}>
+                        <p style={{
+                          fontFamily: "var(--font-cormorant), Georgia, serif",
+                          fontSize: "1rem",
+                          color: "var(--color-black)",
+                          margin: 0,
+                        }}>
+                          {session.user.name}
+                        </p>
+                        <p style={{
+                          fontFamily: "var(--font-montserrat), sans-serif",
+                          fontSize: "0.625rem",
+                          color: "var(--color-gray-600)",
+                          letterSpacing: "0.03em",
+                          marginTop: "0.125rem",
+                        }}>
+                          {session.user.email}
+                        </p>
+                      </div>
+                    )}
+                    {isAdmin && (
+                      <DropdownLink href="/admin" onClick={() => setAccountOpen(false)} gold>
+                        Admin Dashboard
+                      </DropdownLink>
+                    )}
+                    <DropdownLink href="/account/profile" onClick={() => setAccountOpen(false)}>
+                      My Profile
+                    </DropdownLink>
+                    <DropdownLink href="/account/orders" onClick={() => setAccountOpen(false)}>
+                      My Orders
+                    </DropdownLink>
+                    <div style={{ borderTop: "1px solid var(--color-gray-200)" }}>
+                      <button
+                        onClick={() => { setAccountOpen(false); signOut({ callbackUrl: "/" }); }}
+                        style={{
+                          width: "100%", textAlign: "left",
+                          padding: "0.75rem 1.25rem",
+                          fontFamily: "var(--font-montserrat), sans-serif",
+                          fontSize: "0.6875rem",
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                          color: "var(--color-gray-600)",
+                          background: "none", border: "none",
+                          cursor: "pointer",
+                          transition: "color 150ms ease",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "var(--color-error)")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "var(--color-gray-600)")}
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <DropdownLink href="/account/login" onClick={() => setAccountOpen(false)}>
+                      Sign In
+                    </DropdownLink>
+                    <DropdownLink href="/account/register" onClick={() => setAccountOpen(false)}>
+                      Create Account
+                    </DropdownLink>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Cart */}
           <button
             onClick={openDrawer}
             aria-label={`Open bag${totalItems > 0 ? ` (${totalItems} items)` : ""}`}
@@ -141,17 +297,16 @@ export function Navbar() {
       {/* Mobile menu */}
       <div style={{
         background: "var(--color-white)",
-        borderTop: "1px solid var(--color-gray-200)",
+        borderTop: menuOpen ? "1px solid var(--color-gray-200)" : "none",
         overflow: "hidden",
-        maxHeight: menuOpen ? "320px" : "0",
-        transition: "max-height 300ms ease",
+        maxHeight: menuOpen ? "400px" : "0",
+        transition: "max-height 320ms cubic-bezier(0.4, 0, 0.2, 1)",
       }}>
-        <div style={{ padding: "0.75rem 1.5rem 1.5rem" }}>
+        <div style={{ padding: "0.5rem 1.5rem 1.25rem" }}>
           {[
             { href: "/fragrances", label: "Fragrances" },
             { href: "/jewelry", label: "Jewelry" },
             { href: "/shop", label: "Shop All" },
-            { href: "/account/login", label: "Account" },
           ].map(({ href, label }) => (
             <Link
               key={href}
@@ -169,17 +324,117 @@ export function Navbar() {
               {label}
             </Link>
           ))}
+          <div style={{ paddingTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {isAdmin && (
+              <Link href="/admin" onClick={() => setMenuOpen(false)} style={{
+                fontFamily: "var(--font-montserrat), sans-serif",
+                fontSize: "0.625rem", letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--color-primary)",
+                fontWeight: 700,
+                textDecoration: "none",
+                padding: "0.5rem 0",
+              }}>
+                ▦ Admin Dashboard
+              </Link>
+            )}
+            {isLoggedIn ? (
+              <>
+                <Link href="/account/profile" onClick={() => setMenuOpen(false)} style={mobileLinkStyle}>
+                  My Profile
+                </Link>
+                <Link href="/account/orders" onClick={() => setMenuOpen(false)} style={mobileLinkStyle}>
+                  My Orders
+                </Link>
+                <button
+                  onClick={() => { setMenuOpen(false); signOut({ callbackUrl: "/" }); }}
+                  style={{ ...mobileLinkStyle, background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/account/login" onClick={() => setMenuOpen(false)} style={mobileLinkStyle}>
+                  Sign In
+                </Link>
+                <Link href="/account/register" onClick={() => setMenuOpen(false)} style={mobileLinkStyle}>
+                  Create Account
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       <style>{`
         .desktop-nav { display: flex !important; }
         .mobile-hamburger { display: none !important; }
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: -2px; left: 0; right: 0;
+          height: 1px;
+          background: var(--color-primary);
+          transform: scaleX(0);
+          transition: transform 200ms ease;
+        }
+        .nav-link:hover::after { transform: scaleX(1); }
+        @keyframes fadeDropdown {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-hamburger { display: flex !important; }
         }
       `}</style>
     </header>
+  );
+}
+
+const mobileLinkStyle: React.CSSProperties = {
+  fontFamily: "var(--font-montserrat), sans-serif",
+  fontSize: "0.75rem",
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  color: "var(--color-gray-600)",
+  textDecoration: "none",
+  display: "block",
+  padding: "0.375rem 0",
+};
+
+function DropdownLink({
+  href,
+  onClick,
+  children,
+  gold,
+}: {
+  href: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  gold?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      style={{
+        display: "block",
+        padding: "0.75rem 1.25rem",
+        fontFamily: "var(--font-montserrat), sans-serif",
+        fontSize: "0.6875rem",
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+        color: gold ? "var(--color-primary)" : "var(--color-black)",
+        textDecoration: "none",
+        fontWeight: gold ? 600 : 400,
+        transition: "background 150ms ease",
+      }}
+      onMouseEnter={e => (e.currentTarget.style.background = "var(--color-cream)")}
+      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+    >
+      {children}
+    </Link>
   );
 }

@@ -53,11 +53,9 @@ export function ProductActions({
       price: selected.price,
       imageUrl,
       quantity: qty,
+      maxStock: selected.stock,
     });
-    setTimeout(() => {
-      setAdding(false);
-      openDrawer();
-    }, 600);
+    setTimeout(() => setAdding(false), 800);
   };
 
   return (

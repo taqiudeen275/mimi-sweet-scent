@@ -210,11 +210,13 @@ export function CartDrawer() {
                         <button
                           onClick={() => updateQty(item.variantId, item.quantity + 1)}
                           aria-label="Increase"
+                          disabled={item.quantity >= item.maxStock}
                           style={{
                             width: "28px", height: "28px",
                             background: "none", border: "none",
-                            cursor: "pointer", fontSize: "1rem",
-                            color: "var(--color-black)",
+                            cursor: item.quantity >= item.maxStock ? "not-allowed" : "pointer",
+                            fontSize: "1rem",
+                            color: item.quantity >= item.maxStock ? "var(--color-gray-200)" : "var(--color-black)",
                           }}
                         >
                           +

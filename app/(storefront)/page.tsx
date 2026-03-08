@@ -218,6 +218,7 @@ export default async function HomePage() {
               gap: "2rem",
             }}>
               {newArrivals.slice(0, 8).map((product, idx) => (
+                <div key={product.id} className="product-grid-item">
                 <ProductCard
                   key={product.id}
                   id={product.id}
@@ -237,6 +238,7 @@ export default async function HomePage() {
                   }))}
                   isNew={idx < 3}
                 />
+                </div>
               ))}
             </div>
           </div>

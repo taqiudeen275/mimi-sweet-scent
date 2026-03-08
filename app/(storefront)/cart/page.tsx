@@ -51,6 +51,12 @@ export default function CartPage() {
 
   return (
     <main style={{ background: "var(--color-white)" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .cart-grid { grid-template-columns: 1fr !important; }
+          .cart-summary { position: static !important; }
+        }
+      `}</style>
       <div style={{
         maxWidth: "1100px",
         margin: "0 auto",
@@ -93,7 +99,7 @@ export default function CartPage() {
           </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "3rem", alignItems: "start" }}>
+        <div className="cart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "3rem", alignItems: "start" }}>
           {/* Items */}
           <div>
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -188,11 +194,13 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() => updateQty(item.variantId, item.quantity + 1)}
+                          disabled={item.quantity >= item.maxStock}
                           style={{
                             width: "32px", height: "32px",
                             background: "none", border: "none",
-                            cursor: "pointer", fontSize: "1rem",
-                            color: "var(--color-black)",
+                            cursor: item.quantity >= item.maxStock ? "not-allowed" : "pointer",
+                            fontSize: "1rem",
+                            color: item.quantity >= item.maxStock ? "var(--color-gray-200)" : "var(--color-black)",
                           }}
                         >
                           +
@@ -253,7 +261,7 @@ export default function CartPage() {
           </div>
 
           {/* Order summary */}
-          <div style={{
+          <div className="cart-summary" style={{
             position: "sticky",
             top: "calc(64px + 2rem)",
             background: "var(--color-cream)",
