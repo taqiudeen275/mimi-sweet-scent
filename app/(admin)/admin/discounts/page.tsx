@@ -18,14 +18,14 @@ export default async function AdminDiscountsPage() {
   });
 
   // Serialize Date fields to strings for client component
-  const discounts = raw.map((d) => ({
+  const discounts = raw.map((d: (typeof raw)[number]) => ({
     ...d,
     expiresAt: (d.expiresAt ? d.expiresAt.toISOString() : null) as string | null,
     createdAt: d.createdAt.toISOString(),
   }));
 
-  const totalRedemptions = discounts.reduce((sum, d) => sum + d.usageCount, 0);
-  const activeCodes = discounts.filter((d) => d.active).length;
+  const totalRedemptions = discounts.reduce((sum: number, d: (typeof discounts)[number]) => sum + d.usageCount, 0);
+  const activeCodes = discounts.filter((d: (typeof discounts)[number]) => d.active).length;
 
   return (
     <DiscountsClient
