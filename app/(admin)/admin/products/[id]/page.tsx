@@ -266,14 +266,14 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 Fragrance Notes
               </h2>
               {(["TOP", "HEART", "BASE"] as const).map(type => {
-                const notes = product.fragranceNotes.filter(n => n.type === type);
+                const notes = product.fragranceNotes.filter((n: (typeof product.fragranceNotes)[number]) => n.type === type);
                 if (!notes.length) return null;
                 const c = NOTE_COLOR[type];
                 return (
                   <div key={type} style={{ marginBottom: "0.875rem" }}>
                     <span style={{ ...labelStyle, marginBottom: "0.5rem" }}>{type} Notes</span>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.375rem" }}>
-                      {notes.map(n => (
+                      {notes.map((n: (typeof notes)[number]) => (
                         <span key={n.id} style={{
                           padding: "0.25rem 0.75rem",
                           background: c.bg,

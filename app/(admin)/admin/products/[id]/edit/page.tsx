@@ -43,7 +43,7 @@ export default async function EditProductPage({ params }: PageProps) {
     seoTitle:        product.seoTitle ?? "",
     seoDesc:         product.seoDesc ?? "",
     collectionId:    product.collectionId ?? "",
-    variants: product.variants.map(v => ({
+    variants: product.variants.map((v: (typeof product.variants)[number]) => ({
       id:           v.id,
       optionLabel:  v.optionLabel,
       sku:          v.sku,
@@ -51,13 +51,13 @@ export default async function EditProductPage({ params }: PageProps) {
       compareAtGHS: v.compareAtPrice ? (v.compareAtPrice / 100).toFixed(2) : "",
       stock:        String(v.stock),
     })),
-    fragranceNotes: product.fragranceNotes.map(n => ({
+    fragranceNotes: product.fragranceNotes.map((n: (typeof product.fragranceNotes)[number]) => ({
       id:   n.id,
       type: n.type,
       name: n.name,
       icon: n.icon ?? "",
     })),
-    images: product.images.map(img => ({
+    images: product.images.map((img: (typeof product.images)[number]) => ({
       id:      img.id,
       url:     img.url,
       altText: img.altText ?? "",
