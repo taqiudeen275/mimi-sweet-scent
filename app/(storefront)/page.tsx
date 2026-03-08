@@ -6,23 +6,27 @@ import { ProductCard } from "@/components/product/ProductCard";
 export const revalidate = 3600;
 
 async function getHomeData() {
-  const [newArrivals, collections] = await Promise.all([
-    prisma.product.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      include: {
-        variants: { orderBy: { price: "asc" } },
-        images: { orderBy: { position: "asc" }, take: 1 },
-        collection: { select: { name: true } },
-      },
-    }),
-    prisma.collection.findMany({
-      orderBy: { position: "asc" },
-      take: 3,
-    }),
-  ]);
-  return { newArrivals, collections };
+  try {
+    const [newArrivals, collections] = await Promise.all([
+      prisma.product.findMany({
+        where: { status: "ACTIVE" },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        include: {
+          variants: { orderBy: { price: "asc" } },
+          images: { orderBy: { position: "asc" }, take: 1 },
+          collection: { select: { name: true } },
+        },
+      }),
+      prisma.collection.findMany({
+        orderBy: { position: "asc" },
+        take: 3,
+      }),
+    ]);
+    return { newArrivals, collections };
+  } catch {
+    return { newArrivals: [], collections: [] };
+  }
 }
 
 export default async function HomePage() {
