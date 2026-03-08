@@ -11,13 +11,19 @@ import { formatPrice } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const products = await prisma.product.findMany({
-    where: { status: "ACTIVE" },
-    select: { slug: true },
-  });
-  return products.map((p: (typeof products)[number]) => ({ slug: p.slug }));
+  try {
+    const products = await prisma.product.findMany({
+      where: { status: "ACTIVE" },
+      select: { slug: true },
+    });
+    return products.map((p: (typeof products)[number]) => ({ slug: p.slug }));
+  } catch {
+    // DB not available during build (e.g. first deploy) — render all pages on demand
+    return [];
+  }
 }
 
 interface Props {
