@@ -359,7 +359,7 @@ export function DiscountsClient({
                 </td>
               </tr>
             ) : (
-              discounts.map((discount, i) => {
+              discounts.map((discount: Discount, i: number) => {
                 const expired = isExpired(discount.expiresAt);
                 const isConfirmingDelete = confirmDeleteId === discount.id;
 

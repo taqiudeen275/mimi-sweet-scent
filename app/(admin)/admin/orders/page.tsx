@@ -82,7 +82,7 @@ export default async function AdminOrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order, i) => {
+            {orders.map((order: (typeof orders)[number], i: number) => {
               const sc = STATUS_COLORS[order.status] ?? STATUS_COLORS.PENDING;
               const pc = PAY_COLORS[order.paymentStatus] ?? PAY_COLORS.UNPAID;
               return (
@@ -200,7 +200,7 @@ export default async function AdminOrdersPage() {
       <div className="admin-orders-cards" style={{ display: "none", flexDirection: "column", gap: 0, background: "var(--color-white)", border: "1px solid var(--color-gray-200)" }}>
         {orders.length === 0 ? (
           <p style={{ padding: "3rem", textAlign: "center", fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.8125rem", color: "var(--color-gray-400)" }}>No orders yet</p>
-        ) : orders.map((order, i) => {
+        ) : orders.map((order: (typeof orders)[number], i: number) => {
           const sc = STATUS_COLORS[order.status] ?? STATUS_COLORS.PENDING;
           const pc = PAY_COLORS[order.paymentStatus] ?? PAY_COLORS.UNPAID;
           return (

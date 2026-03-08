@@ -90,7 +90,7 @@ export default async function OrdersPage() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          {orders.map((order) => {
+          {orders.map((order: (typeof orders)[number]) => {
             const sc = STATUS_COLORS[order.status] ?? STATUS_COLORS.PENDING;
             return (
               <div key={order.id} style={{
@@ -152,7 +152,7 @@ export default async function OrdersPage() {
 
                 {/* Items */}
                 <div style={{ padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  {order.items.map((item) => {
+                  {order.items.map((item: (typeof order.items)[number]) => {
                     const imageUrl = item.productVariant.product.images[0]?.url;
                     return (
                       <div key={item.id} style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
