@@ -37,7 +37,7 @@ export function Footer() {
     fontSize: "0.625rem",
     letterSpacing: "0.15em",
     textTransform: "uppercase",
-    color: "rgba(255,255,255,0.4)",
+    color: "var(--footer-text-dim)",
     marginBottom: "1.25rem",
     fontFamily: "var(--font-montserrat), sans-serif",
     fontWeight: 600,
@@ -46,24 +46,24 @@ export function Footer() {
   const linkStyle: React.CSSProperties = {
     display: "block",
     fontSize: "0.8125rem",
-    color: "rgba(255,255,255,0.6)",
+    color: "var(--footer-text)",
     textDecoration: "none",
     marginBottom: "0.625rem",
     transition: "color 150ms ease",
   };
 
   return (
-    <footer style={{ background: "var(--color-black)", color: "var(--color-white)" }}>
+    <footer style={{ background: "var(--footer-bg)", color: "#FFFFFF" }}>
       {/* Newsletter */}
       <div style={{
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        borderBottom: "1px solid var(--footer-border)",
         padding: "3.5rem 2rem",
       }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem", textAlign: "center" }}>
           <p style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.625rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-primary)" }}>
             Stay in the Know
           </p>
-          <p style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 300, color: "var(--color-white)", margin: 0 }}>
+          <p style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 300, color: "#FFFFFF", margin: 0 }}>
             Join our community of fragrance lovers and jewelry enthusiasts
           </p>
           {subscribed ? (
@@ -83,10 +83,10 @@ export function Footer() {
                   padding: "0.75rem 1.25rem",
                   fontFamily: "var(--font-montserrat), sans-serif",
                   fontSize: "0.8125rem",
-                  background: "rgba(255,255,255,0.07)",
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  background: "var(--footer-input-bg)",
+                  border: "1px solid var(--footer-input-border)",
                   borderRight: "none",
-                  color: "var(--color-white)",
+                  color: "#FFFFFF",
                   outline: "none",
                   letterSpacing: "0.02em",
                 }}
@@ -98,7 +98,7 @@ export function Footer() {
                   padding: "0.75rem 1.5rem",
                   background: "var(--color-primary)",
                   border: "1px solid var(--color-primary)",
-                  color: "var(--color-white)",
+                  color: "#FFFFFF",
                   fontFamily: "var(--font-montserrat), sans-serif",
                   fontSize: "0.625rem",
                   letterSpacing: "0.15em",
@@ -125,7 +125,7 @@ export function Footer() {
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
         gap: "3rem",
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
+        borderBottom: "1px solid var(--footer-border)",
       }}>
         {/* Brand */}
         <div>
@@ -139,7 +139,7 @@ export function Footer() {
           }}>
             Mimi&apos;s Sweet Scent
           </p>
-          <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: "240px" }}>
+          <p style={{ fontSize: "0.8125rem", color: "var(--footer-text)", lineHeight: 1.7, maxWidth: "240px" }}>
             Luxury perfumes and fine jewelry. Crafted with artistry, worn with elegance.
           </p>
         </div>
@@ -153,8 +153,8 @@ export function Footer() {
             { href: "/shop", label: "All Products" },
           ].map(({ href, label }) => (
             <Link key={href} href={href} style={linkStyle}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--color-white)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+              onMouseEnter={e => (e.currentTarget.style.color = "#FFFFFF")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--footer-text)")}
             >
               {label}
             </Link>
@@ -169,8 +169,8 @@ export function Footer() {
             { href: "/services", label: "Services" },
           ].map(({ href, label }) => (
             <Link key={href} href={href} style={linkStyle}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--color-white)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+              onMouseEnter={e => (e.currentTarget.style.color = "#FFFFFF")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--footer-text)")}
             >
               {label}
             </Link>
@@ -183,18 +183,18 @@ export function Footer() {
           {isLoggedIn ? (
             <>
               {/* User name/email */}
-              <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.85)", marginBottom: "0.625rem", fontFamily: "var(--font-cormorant), Georgia, serif" }}>
+              <p style={{ fontSize: "0.8125rem", color: "var(--footer-text-bright)", marginBottom: "0.625rem", fontFamily: "var(--font-cormorant), Georgia, serif" }}>
                 {session?.user?.name ?? session?.user?.email}
               </p>
               <Link href="/account/orders" style={linkStyle}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--color-white)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                onMouseEnter={e => (e.currentTarget.style.color = "#FFFFFF")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--footer-text)")}
               >
                 My Orders
               </Link>
               <Link href="/account/profile" style={linkStyle}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--color-white)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                onMouseEnter={e => (e.currentTarget.style.color = "#FFFFFF")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--footer-text)")}
               >
                 My Profile
               </Link>
@@ -214,15 +214,15 @@ export function Footer() {
                   cursor: "pointer",
                   padding: 0,
                   fontSize: "0.8125rem",
-                  color: "rgba(255,255,255,0.6)",
+                  color: "var(--footer-text)",
                   fontFamily: "inherit",
                   textDecoration: "none",
                   display: "block",
                   marginBottom: "0.625rem",
                   transition: "color 150ms ease",
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--color-white)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                onMouseEnter={e => (e.currentTarget.style.color = "#FFFFFF")}
+                onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = "var(--footer-text)")}
               >
                 Sign Out
               </button>
@@ -230,14 +230,14 @@ export function Footer() {
           ) : (
             <>
               <Link href="/account/login" style={linkStyle}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--color-white)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                onMouseEnter={e => (e.currentTarget.style.color = "#FFFFFF")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--footer-text)")}
               >
                 Sign In
               </Link>
               <Link href="/account/register" style={linkStyle}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--color-white)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
+                onMouseEnter={e => (e.currentTarget.style.color = "#FFFFFF")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--footer-text)")}
               >
                 Create Account
               </Link>
@@ -248,10 +248,10 @@ export function Footer() {
         {/* Contact */}
         <div>
           <p style={colHeadStyle}>Contact</p>
-          <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.6)", marginBottom: "0.5rem" }}>
+          <p style={{ fontSize: "0.8125rem", color: "var(--footer-text)", marginBottom: "0.5rem" }}>
             hello@mimissweetscent.com
           </p>
-          <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.6)" }}>
+          <p style={{ fontSize: "0.8125rem", color: "var(--footer-text)" }}>
             Mon–Sat, 9am–6pm WAT
           </p>
         </div>
@@ -259,10 +259,10 @@ export function Footer() {
 
       {/* Bottom bar */}
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "1.5rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
-        <p style={{ fontSize: "0.6875rem", color: "rgba(255,255,255,0.3)" }}>
+        <p style={{ fontSize: "0.6875rem", color: "var(--footer-text-dim)" }}>
           © {new Date().getFullYear()} Mimi&apos;s Sweet Scent. All rights reserved.
         </p>
-        <p style={{ fontSize: "0.6875rem", color: "rgba(255,255,255,0.3)" }}>
+        <p style={{ fontSize: "0.6875rem", color: "var(--footer-text-dim)" }}>
           Secured by Paystack
         </p>
       </div>

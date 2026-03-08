@@ -188,7 +188,7 @@ export function ProductActions({
         <p style={{
           fontFamily: "var(--font-montserrat), sans-serif",
           fontSize: "0.6875rem",
-          color: "#C0392B",
+          color: "var(--color-error)",
           letterSpacing: "0.05em",
         }}>
           Only {selected.stock} left in stock

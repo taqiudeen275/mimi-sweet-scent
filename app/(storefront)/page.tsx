@@ -71,7 +71,7 @@ export default async function HomePage() {
             fontSize: "clamp(3.5rem, 10vw, 7rem)",
             fontWeight: 300,
             fontStyle: "italic",
-            color: "var(--color-white)",
+            color: "#FFFFFF",
             lineHeight: 1.0,
             letterSpacing: "-0.02em",
             marginBottom: "0.25rem",
@@ -84,7 +84,7 @@ export default async function HomePage() {
             fontSize: "clamp(3.5rem, 10vw, 7rem)",
             fontWeight: 300,
             fontStyle: "italic",
-            color: "var(--color-white)",
+            color: "#FFFFFF",
             lineHeight: 1.0,
             letterSpacing: "-0.02em",
             marginBottom: "2rem",
@@ -117,7 +117,7 @@ export default async function HomePage() {
             display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center",
             animation: "fadeUp 0.8s ease 0.85s both",
           }}>
-            <Link href="/fragrances" className="btn btn-secondary" style={{ color: "var(--color-white)", borderColor: "rgba(255,255,255,0.6)" }}>
+            <Link href="/fragrances" className="btn btn-secondary" style={{ color: "#FFFFFF", borderColor: "rgba(255,255,255,0.6)" }}>
               Shop Fragrances
             </Link>
             <Link href="/jewelry" className="btn btn-primary" style={{ background: "var(--color-primary)", borderColor: "var(--color-primary)" }}>
@@ -175,7 +175,7 @@ export default async function HomePage() {
                     display: "flex", flexDirection: "column",
                     justifyContent: "flex-end", padding: "2rem",
                   }}>
-                    <h3 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "1.5rem", fontWeight: 400, color: "var(--color-white)", marginBottom: "0.5rem" }}>
+                    <h3 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "1.5rem", fontWeight: 400, color: "#FFFFFF", marginBottom: "0.5rem" }}>
                       {col.name}
                     </h3>
                     <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.7)", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "var(--font-montserrat), sans-serif" }}>
@@ -246,7 +246,7 @@ export default async function HomePage() {
       )}
 
       {/* ── Brand Story / Quote ───────────────────────────────────────────────── */}
-      <section style={{ padding: "8rem 2rem", background: "var(--color-black)" }}>
+      <section style={{ padding: "8rem 2rem", background: "#111110" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
           <div style={{ width: "40px", height: "1px", background: "var(--color-primary)", margin: "0 auto 3rem" }} />
           <blockquote style={{
@@ -254,7 +254,7 @@ export default async function HomePage() {
             fontSize: "clamp(1.75rem, 4vw, 3rem)",
             fontWeight: 300,
             fontStyle: "italic",
-            color: "var(--color-white)",
+            color: "#EDE8DC",
             lineHeight: 1.35,
             margin: "0 0 3rem",
           }}>
@@ -296,10 +296,10 @@ export default async function HomePage() {
               padding: "3rem 2rem",
               textAlign: "center",
             }}>
-              <h3 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "2rem", fontWeight: 300, fontStyle: "italic", color: "var(--color-white)", marginBottom: "1.5rem" }}>
+              <h3 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "2rem", fontWeight: 300, fontStyle: "italic", color: "#FFFFFF", marginBottom: "1.5rem" }}>
                 Fragrances
               </h3>
-              <Link href="/fragrances" className="btn btn-secondary" style={{ borderColor: "rgba(255,255,255,0.7)", color: "var(--color-white)" }}>
+              <Link href="/fragrances" className="btn btn-secondary" style={{ borderColor: "rgba(255,255,255,0.7)", color: "#FFFFFF" }}>
                 Discover
               </Link>
             </div>
@@ -320,10 +320,10 @@ export default async function HomePage() {
               padding: "3rem 2rem",
               textAlign: "center",
             }}>
-              <h3 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "2rem", fontWeight: 300, fontStyle: "italic", color: "var(--color-white)", marginBottom: "1.5rem" }}>
+              <h3 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "2rem", fontWeight: 300, fontStyle: "italic", color: "#FFFFFF", marginBottom: "1.5rem" }}>
                 Fine Jewelry
               </h3>
-              <Link href="/jewelry" className="btn btn-secondary" style={{ borderColor: "rgba(255,255,255,0.7)", color: "var(--color-white)" }}>
+              <Link href="/jewelry" className="btn btn-secondary" style={{ borderColor: "rgba(255,255,255,0.7)", color: "#FFFFFF" }}>
                 Discover
               </Link>
             </div>

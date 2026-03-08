@@ -27,7 +27,7 @@ export function ToastContainer() {
               ? "var(--color-error)"
               : toast.type === "info"
                 ? "var(--color-black)"
-                : "#1A3A2A",
+                : "var(--color-success)",
             color: "var(--color-white)",
             padding: "0.875rem 1.25rem",
             display: "flex",

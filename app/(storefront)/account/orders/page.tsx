@@ -8,12 +8,12 @@ import { formatPrice } from "@/lib/utils";
 export const metadata: Metadata = { title: "My Orders" };
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  PENDING:    { bg: "#FEF3C7", color: "#92400E" },
-  PROCESSING: { bg: "#DBEAFE", color: "#1E40AF" },
-  SHIPPED:    { bg: "#EDE9FE", color: "#6D28D9" },
-  DELIVERED:  { bg: "#D1FAE5", color: "#065F46" },
-  CANCELLED:  { bg: "#FEE2E2", color: "#991B1B" },
-  REFUNDED:   { bg: "#F3F4F6", color: "#6B7280" },
+  PENDING:    { bg: "var(--status-pending-bg)",    color: "var(--status-pending-color)" },
+  PROCESSING: { bg: "var(--status-processing-bg)", color: "var(--status-processing-color)" },
+  SHIPPED:    { bg: "var(--status-shipped-bg)",    color: "var(--status-shipped-color)" },
+  DELIVERED:  { bg: "var(--status-delivered-bg)",  color: "var(--status-delivered-color)" },
+  CANCELLED:  { bg: "var(--status-cancelled-bg)",  color: "var(--status-cancelled-color)" },
+  REFUNDED:   { bg: "var(--status-refunded-bg)",   color: "var(--status-refunded-color)" },
 };
 
 export default async function OrdersPage() {

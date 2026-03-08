@@ -72,7 +72,7 @@ export default async function FragrancesPage({ searchParams }: PageProps) {
         />
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
           <p className="label" style={{ color: "var(--color-primary)", marginBottom: "1rem" }}>The Art of Scent</p>
-          <h1 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(2.5rem, 6vw, 4.5rem)", color: "var(--color-white)", margin: 0 }}>
+          <h1 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(2.5rem, 6vw, 4.5rem)", color: "#FFFFFF", margin: 0 }}>
             Fragrances
           </h1>
         </div>

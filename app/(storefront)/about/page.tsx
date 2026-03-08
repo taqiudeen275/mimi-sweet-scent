@@ -85,7 +85,7 @@ export default async function AboutPage() {
             fontFamily: "var(--font-cormorant), Georgia, serif",
             fontSize: "clamp(2.5rem, 6vw, 5rem)",
             fontWeight: 300,
-            color: "var(--color-white)",
+            color: "#FFFFFF",
             lineHeight: 1.1,
             maxWidth: "700px",
             margin: "0 0 1.5rem",
@@ -108,7 +108,7 @@ export default async function AboutPage() {
             fontFamily: "var(--font-montserrat), sans-serif",
             fontSize: "1rem",
             lineHeight: 1.8,
-            color: "#3A3A3A",
+            color: "var(--color-black)",
             whiteSpace: "pre-wrap",
           }}>
             {page.content}
@@ -151,7 +151,7 @@ export default async function AboutPage() {
                   fontFamily: "var(--font-montserrat), sans-serif",
                   fontSize: "0.9375rem",
                   lineHeight: 1.8,
-                  color: "#555",
+                  color: "var(--color-gray-600)",
                   marginBottom: "1.5rem",
                 }}>
                   Mimi&apos;s Sweet Scent was born from a singular obsession: the belief that
@@ -163,7 +163,7 @@ export default async function AboutPage() {
                   fontFamily: "var(--font-montserrat), sans-serif",
                   fontSize: "0.9375rem",
                   lineHeight: 1.8,
-                  color: "#555",
+                  color: "var(--color-gray-600)",
                 }}>
                   Every piece in our collection tells a story — of master perfumers in Grasse, of
                   goldsmiths in Tuscany, of traditions passed through generations. We curate not just
@@ -221,7 +221,7 @@ export default async function AboutPage() {
           </section>
 
           {/* Values */}
-          <section style={{ background: "var(--color-black)", padding: "5rem 2rem" }}>
+          <section style={{ background: "#111110", padding: "5rem 2rem" }}>
             <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
               <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
                 <p style={{
@@ -239,7 +239,7 @@ export default async function AboutPage() {
                   fontFamily: "var(--font-cormorant), Georgia, serif",
                   fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
                   fontWeight: 300,
-                  color: "var(--color-white)",
+                  color: "#EDE8DC",
                   margin: 0,
                 }}>
                   Our Values
@@ -272,7 +272,7 @@ export default async function AboutPage() {
                       fontFamily: "var(--font-cormorant), Georgia, serif",
                       fontSize: "1.375rem",
                       fontWeight: 400,
-                      color: "var(--color-white)",
+                      color: "#EDE8DC",
                       marginBottom: "1rem",
                     }}>
                       {title}

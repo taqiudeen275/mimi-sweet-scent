@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useCart } from "@/contexts/cart-context";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const SHOP_LINKS = [
   { href: "/fragrances", label: "Fragrances", sub: "Perfumes, EDPs & colognes" },
@@ -86,7 +87,7 @@ export function Navbar() {
     <header
       style={{
         position: "sticky", top: 0, zIndex: 30,
-        background: "rgba(255,255,255,0.97)",
+        background: "var(--navbar-bg)",
         backdropFilter: "blur(8px)",
         borderBottom: "1px solid var(--color-gray-200)",
       }}
@@ -286,6 +287,9 @@ export function Navbar() {
               Admin
             </Link>
           )}
+
+          {/* Theme toggle */}
+          <ThemeToggle />
 
           {/* Search */}
           <div ref={searchRef} style={{ position: "relative", display: "flex", alignItems: "center" }}>

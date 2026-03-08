@@ -295,12 +295,12 @@ export default function CheckoutPage() {
 
             {error && (
               <div style={{
-                background: "#FEF2F2",
-                border: "1px solid #FECACA",
+                background: "var(--error-bg)",
+                border: "1px solid var(--error-border)",
                 padding: "0.875rem 1rem",
                 fontFamily: "var(--font-montserrat), sans-serif",
                 fontSize: "0.8125rem",
-                color: "#B91C1C",
+                color: "var(--error-text)",
               }}>
                 {error}
               </div>

@@ -8,6 +8,7 @@
   --color-black:     #1A1A1A;  /* Headlines, navigation, body text */
   --color-white:     #FFFFFF;  /* Page backgrounds, card surfaces */
   --color-cream:     #FAF7F0;  /* Section backgrounds, form fields */
+  --color-gray-400:  #9E9E9E;  /* Placeholder text, disabled states */
   --color-gray-600:  #555555;  /* Secondary text, labels, metadata */
   --color-gray-200:  #E0E0E0;  /* Borders, dividers, skeleton loaders */
   --color-success:   #2D6A4F;  /* Order confirmed, in-stock */
@@ -19,7 +20,79 @@
 
   /* Transitions */
   --transition-hover: 250ms ease;
+
+  /* Component-specific */
+  --navbar-bg: rgba(255, 255, 255, 0.97);
+  --shadow-card: rgba(0, 0, 0, 0.08);
+  --shadow-strong: rgba(0, 0, 0, 0.16);
+
+  /* Error / alert box */
+  --error-bg: #FEF2F2;
+  --error-border: #FECACA;
+  --error-text: #B91C1C;
+
+  /* Order status badge colors */
+  --status-pending-bg:    #FEF3C7; --status-pending-color:    #92400E;
+  --status-processing-bg: #DBEAFE; --status-processing-color: #1E40AF;
+  --status-shipped-bg:    #EDE9FE; --status-shipped-color:    #6D28D9;
+  --status-delivered-bg:  #D1FAE5; --status-delivered-color:  #065F46;
+  --status-cancelled-bg:  #FEE2E2; --status-cancelled-color:  #991B1B;
+  --status-refunded-bg:   #F3F4F6; --status-refunded-color:   #6B7280;
+  --status-unpaid-bg:     #FEE2E2; --status-unpaid-color:     #991B1B;
+  --status-paid-bg:       #D1FAE5; --status-paid-color:       #065F46;
+
+  /* Footer is always dark in both themes */
+  --footer-bg: #111110;
+  --footer-border: rgba(255, 255, 255, 0.08);
+  --footer-text: rgba(255, 255, 255, 0.6);
+  --footer-text-dim: rgba(255, 255, 255, 0.35);
+  --footer-text-bright: rgba(255, 255, 255, 0.85);
+  --footer-input-bg: rgba(255, 255, 255, 0.07);
+  --footer-input-border: rgba(255, 255, 255, 0.2);
+
+  /* Inline SVG chevron for selects — URL-encoded hex */
+  --select-arrow: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%231A1A1A' stroke-width='1.5'/%3E%3C/svg%3E");
 }
+
+/* ─── Dark Theme ────────────────────────────────────────────────────────────── */
+/*  Trigger 1: explicit user choice via [data-theme="dark"] on <html>           */
+/*  Trigger 2: system preference — applies when user hasn't pinned "light"      */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --select-arrow: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23EDE8DC' stroke-width='1.5'/%3E%3C/svg%3E");
+
+  --error-bg: rgba(220, 38, 38, 0.12);
+  --error-border: rgba(220, 38, 38, 0.3);
+  --error-text: #F87171;
+
+  --status-pending-bg:    rgba(254,243,199,0.12); --status-pending-color:    #FCD34D;
+  --status-processing-bg: rgba(219,234,254,0.12); --status-processing-color: #93C5FD;
+  --status-shipped-bg:    rgba(237,233,254,0.12); --status-shipped-color:    #C4B5FD;
+  --status-delivered-bg:  rgba(209,250,229,0.12); --status-delivered-color:  #6EE7B7;
+  --status-cancelled-bg:  rgba(254,226,226,0.12); --status-cancelled-color:  #FCA5A5;
+  --status-refunded-bg:   rgba(243,244,246,0.08); --status-refunded-color:   #9CA3AF;
+  --status-unpaid-bg:     rgba(254,226,226,0.12); --status-unpaid-color:     #FCA5A5;
+  --status-paid-bg:       rgba(209,250,229,0.12); --status-paid-color:       #6EE7B7;
+
+  --color-primary:   #D4A017;  /* Brighter gold — better contrast on dark */
+  --color-black:     #EDE8DC;  /* Warm ivory — text on dark backgrounds */
+  --color-white:     #0D0C0A;  /* Deep warm near-black — main background */
+  --color-cream:     #171410;  /* Elevated dark surface — cards, sections */
+  --color-gray-400:  #6A6460;  /* Muted warm gray */
+  --color-gray-600:  #9A9088;  /* Warm mid-gray — secondary text */
+  --color-gray-200:  #2C2822;  /* Dark warm border */
+  --color-success:   #52C97A;  /* Brighter green for dark bg */
+  --color-error:     #E57373;  /* Brighter red for dark bg */
+
+  --navbar-bg: rgba(13, 12, 10, 0.97);
+  --shadow-card: rgba(0, 0, 0, 0.3);
+  --shadow-strong: rgba(0, 0, 0, 0.5);
+}
+
+/* System dark preference intentionally NOT used — light is the brand default.   */
+/* Dark mode activates only via explicit user toggle ([data-theme="dark"]).       */
 
 /* ─── Tailwind v4 Theme Extension ─────────────────────────────────────────── */
 
@@ -58,6 +131,7 @@ body {
   font-family: var(--font-montserrat), "Arial", sans-serif;
   font-size: 16px;
   line-height: 1.6;
+  transition: background-color 350ms ease, color 350ms ease;
 }
 
 /* ─── Typography ──────────────────────────────────────────────────────────── */

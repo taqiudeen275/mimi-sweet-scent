@@ -109,7 +109,7 @@ export default async function ServicesPage() {
             fontFamily: "var(--font-cormorant), Georgia, serif",
             fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
             fontWeight: 300,
-            color: "var(--color-white)",
+            color: "#FFFFFF",
             lineHeight: 1.1,
             maxWidth: "600px",
             margin: "0 0 1.5rem",
@@ -132,7 +132,7 @@ export default async function ServicesPage() {
             fontFamily: "var(--font-montserrat), sans-serif",
             fontSize: "1rem",
             lineHeight: 1.8,
-            color: "#3A3A3A",
+            color: "var(--color-black)",
             whiteSpace: "pre-wrap",
           }}>
             {page.content}
@@ -223,7 +223,7 @@ export default async function ServicesPage() {
                     fontFamily: "var(--font-montserrat), sans-serif",
                     fontSize: "0.8125rem",
                     lineHeight: 1.7,
-                    color: "#555",
+                    color: "var(--color-gray-600)",
                     margin: 0,
                   }}>
                     {description}
@@ -235,7 +235,7 @@ export default async function ServicesPage() {
 
           {/* CTA / Contact */}
           <section style={{
-            background: "var(--color-black)",
+            background: "#111110",
             padding: "5rem 2rem",
             textAlign: "center",
           }}>
@@ -255,7 +255,7 @@ export default async function ServicesPage() {
                 fontFamily: "var(--font-cormorant), Georgia, serif",
                 fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)",
                 fontWeight: 300,
-                color: "var(--color-white)",
+                color: "#EDE8DC",
                 marginBottom: "1.25rem",
                 lineHeight: 1.2,
               }}>
@@ -264,7 +264,7 @@ export default async function ServicesPage() {
               <p style={{
                 fontFamily: "var(--font-montserrat), sans-serif",
                 fontSize: "0.875rem",
-                color: "rgba(255,255,255,0.6)",
+                color: "var(--color-gray-600)",
                 lineHeight: 1.7,
                 marginBottom: "2.5rem",
               }}>
@@ -277,7 +277,7 @@ export default async function ServicesPage() {
                   style={{
                     display: "inline-block",
                     background: "var(--color-primary)",
-                    color: "var(--color-white)",
+                    color: "#FFFFFF",
                     padding: "0.875rem 2.5rem",
                     fontFamily: "var(--font-montserrat), sans-serif",
                     fontSize: "0.625rem",
@@ -294,7 +294,7 @@ export default async function ServicesPage() {
                   style={{
                     display: "inline-block",
                     background: "transparent",
-                    color: "var(--color-white)",
+                    color: "#FFFFFF",
                     padding: "0.875rem 2.5rem",
                     fontFamily: "var(--font-montserrat), sans-serif",
                     fontSize: "0.625rem",
