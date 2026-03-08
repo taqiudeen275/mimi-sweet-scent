@@ -176,7 +176,7 @@ export default async function AdminCustomersPage() {
       <div className="admin-customers-cards" style={{ display: "none", flexDirection: "column", gap: 0, background: "var(--color-white)", border: "1px solid var(--color-gray-200)" }}>
         {customers.length === 0 ? (
           <p style={{ padding: "3rem", textAlign: "center", fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.8125rem", color: "var(--color-gray-400)" }}>No customers yet</p>
-        ) : customers.map((customer, i) => {
+        ) : customers.map((customer: (typeof customers)[number], i: number) => {
           const totalSpent = customer.orders.reduce((s: number, o: { totalAmount: number }) => s + o.totalAmount, 0);
           return (
             <div key={customer.id} style={{ padding: "1rem 1.25rem", borderBottom: i < customers.length - 1 ? "1px solid var(--color-gray-200)" : "none", display: "flex", gap: "0.875rem", alignItems: "center" }}>
