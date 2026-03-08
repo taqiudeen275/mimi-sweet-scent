@@ -65,7 +65,7 @@ export default function NewProductPage() {
         </h1>
       </div>
 
-      <ProductForm initial={defaultForm} mode="create" />
+      <ProductForm initial={defaultForm} />
     </div>
   );
 }

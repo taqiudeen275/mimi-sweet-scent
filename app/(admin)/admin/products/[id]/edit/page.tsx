@@ -119,7 +119,7 @@ export default async function EditProductPage({ params }: PageProps) {
         </div>
       </div>
 
-      <ProductForm initial={initial} mode="edit" />
+      <ProductForm initial={initial} />
     </div>
   );
 }
