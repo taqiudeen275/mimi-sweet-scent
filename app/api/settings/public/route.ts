@@ -29,15 +29,19 @@ const DEFAULTS: Record<string, unknown> = {
   defaultOgImage:   "", gaId: "", fbPixelId: "", maintenanceMode: "false",
 };
 
-export const revalidate = 60; // cache for 60s
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const rows = await prisma.siteSetting.findMany({
-    where: { key: { in: PUBLIC_KEYS as unknown as string[] } },
-  });
   const map: Record<string, unknown> = { ...DEFAULTS };
-  for (const row of rows) {
-    try { map[row.key] = JSON.parse(row.value); } catch { map[row.key] = row.value; }
+  try {
+    const rows = await prisma.siteSetting.findMany({
+      where: { key: { in: PUBLIC_KEYS as unknown as string[] } },
+    });
+    for (const row of rows) {
+      try { map[row.key] = JSON.parse(row.value); } catch { map[row.key] = row.value; }
+    }
+  } catch {
+    // DB not yet migrated — return defaults
   }
   return NextResponse.json(map);
 }
