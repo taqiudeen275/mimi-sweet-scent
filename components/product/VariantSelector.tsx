@@ -17,7 +17,7 @@ interface VariantSelectorProps {
 export function VariantSelector({ variants, selectedId, onSelect }: VariantSelectorProps) {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.625rem" }}>
-      {variants.map((v) => {
+      {variants.map((v: Variant) => {
         const isSelected = v.id === selectedId;
         const outOfStock = v.stock === 0;
         return (

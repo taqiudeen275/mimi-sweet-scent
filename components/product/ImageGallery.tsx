@@ -48,7 +48,7 @@ export function ImageGallery({ images, productName }: { images: GalleryImage[]; 
       {/* Thumbnails */}
       {images.length > 1 && (
         <div style={{ display: "flex", gap: "0.75rem", overflowX: "auto" }}>
-          {images.map((img, i) => (
+          {images.map((img: GalleryImage, i: number) => (
             <button
               key={i}
               onClick={() => setActive(i)}

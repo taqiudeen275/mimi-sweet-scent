@@ -35,7 +35,7 @@ export function ProductCard({
   const [hovering, setHovering] = useState(false);
   const [adding, setAdding] = useState(false);
 
-  const cheapest = variants.reduce((min, v) => v.price < min.price ? v : min, variants[0]);
+  const cheapest = variants.reduce((min: ProductVariant, v: ProductVariant) => v.price < min.price ? v : min, variants[0]);
   const hasDiscount = !!cheapest?.compareAtPrice;
 
   const handleQuickAdd = async (e: React.MouseEvent) => {
