@@ -2,15 +2,31 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useCart } from "@/contexts/cart-context";
+
+const NAV_LINKS = [
+  { href: "/fragrances", label: "Fragrances" },
+  { href: "/jewelry", label: "Jewelry" },
+  { href: "/shop", label: "Shop All" },
+  { href: "/about", label: "About" },
+  { href: "/services", label: "Services" },
+];
 
 export function Navbar() {
   const { totalItems, openDrawer } = useCart();
   const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const accountRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "MANAGER";
   const isLoggedIn = !!session?.user;
@@ -21,15 +37,42 @@ export function Navbar() {
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setAccountOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // Focus search input when it opens
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
   // Close mobile menu on route change
   useEffect(() => {
     setMenuOpen(false);
   }, []);
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    setSearchOpen(false);
+    setSearchQuery("");
+    if (q) {
+      router.push(`/shop?q=${encodeURIComponent(q)}`);
+    }
+  }
+
+  function handleSearchKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Escape") {
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  }
 
   return (
     <header
@@ -52,11 +95,7 @@ export function Navbar() {
         <div style={{ display: "flex", alignItems: "center" }}>
           {/* Desktop nav */}
           <nav style={{ display: "flex", gap: "2rem", alignItems: "center" }} className="desktop-nav">
-            {[
-              { href: "/fragrances", label: "Fragrances" },
-              { href: "/jewelry", label: "Jewelry" },
-              { href: "/shop", label: "Shop All" },
-            ].map(({ href, label }) => (
+            {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -141,6 +180,65 @@ export function Navbar() {
             </Link>
           )}
 
+          {/* Search */}
+          <div ref={searchRef} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            {/* Expanding search bar */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              overflow: "hidden",
+              maxWidth: searchOpen ? "220px" : "0",
+              opacity: searchOpen ? 1 : 0,
+              transition: "max-width 280ms cubic-bezier(0.4,0,0.2,1), opacity 200ms ease",
+              marginRight: searchOpen ? "0.5rem" : "0",
+            }}>
+              <form onSubmit={handleSearchSubmit} style={{ display: "flex", alignItems: "center" }}>
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder="Search products…"
+                  style={{
+                    width: "200px",
+                    padding: "0.375rem 0.75rem",
+                    fontFamily: "var(--font-montserrat), sans-serif",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.03em",
+                    border: "1px solid var(--color-gray-200)",
+                    outline: "none",
+                    background: "var(--color-white)",
+                    color: "var(--color-black)",
+                  }}
+                />
+              </form>
+            </div>
+
+            {/* Search icon button */}
+            <button
+              onClick={() => setSearchOpen(o => !o)}
+              aria-label={searchOpen ? "Close search" : "Open search"}
+              style={{
+                background: "none", border: "none",
+                cursor: "pointer", padding: 0,
+                color: "var(--color-black)",
+                display: "flex", alignItems: "center",
+              }}
+            >
+              {searchOpen ? (
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+              )}
+            </button>
+          </div>
+
           {/* Account dropdown */}
           <div ref={accountRef} style={{ position: "relative" }}>
             <button
@@ -158,7 +256,6 @@ export function Navbar() {
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              {/* Show name initial if logged in */}
               {isLoggedIn && status !== "loading" && (
                 <span style={{
                   width: "18px", height: "18px",
@@ -299,15 +396,11 @@ export function Navbar() {
         background: "var(--color-white)",
         borderTop: menuOpen ? "1px solid var(--color-gray-200)" : "none",
         overflow: "hidden",
-        maxHeight: menuOpen ? "400px" : "0",
+        maxHeight: menuOpen ? "500px" : "0",
         transition: "max-height 320ms cubic-bezier(0.4, 0, 0.2, 1)",
       }}>
         <div style={{ padding: "0.5rem 1.5rem 1.25rem" }}>
-          {[
-            { href: "/fragrances", label: "Fragrances" },
-            { href: "/jewelry", label: "Jewelry" },
-            { href: "/shop", label: "Shop All" },
-          ].map(({ href, label }) => (
+          {NAV_LINKS.map(({ href, label }) => (
             <Link
               key={href}
               href={href}

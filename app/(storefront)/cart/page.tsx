@@ -2,11 +2,32 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/contexts/cart-context";
 import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
   const { items, subtotal, totalItems, removeItem, updateQty, clearCart } = useCart();
+  const [confirmClear, setConfirmClear] = useState(false);
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleClearClick() {
+    if (confirmClear) {
+      clearCart();
+      setConfirmClear(false);
+      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+    } else {
+      setConfirmClear(true);
+      confirmTimerRef.current = setTimeout(() => setConfirmClear(false), 3000);
+    }
+  }
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+    };
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -82,20 +103,22 @@ export default function CartPage() {
             </span>
           </h1>
           <button
-            onClick={clearCart}
+            onClick={handleClearClick}
             style={{
               fontFamily: "var(--font-montserrat), sans-serif",
               fontSize: "0.625rem",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "var(--color-gray-600)",
+              color: confirmClear ? "var(--color-error, #c0392b)" : "var(--color-gray-600)",
               background: "none",
-              border: "none",
+              border: confirmClear ? "1px solid var(--color-error, #c0392b)" : "none",
               cursor: "pointer",
-              textDecoration: "underline",
+              textDecoration: confirmClear ? "none" : "underline",
+              padding: confirmClear ? "0.25rem 0.625rem" : "0",
+              transition: "color 150ms ease, border 150ms ease",
             }}
           >
-            Clear All
+            {confirmClear ? "Confirm clear?" : "Clear All"}
           </button>
         </div>
 
