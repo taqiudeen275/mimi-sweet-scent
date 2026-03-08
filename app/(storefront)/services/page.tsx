@@ -164,6 +164,7 @@ export default async function ServicesPage() {
           </section>
 
           {/* Services grid */}
+          <style>{`.service-card:hover{border-color:var(--color-primary)!important;box-shadow:0 4px 24px rgba(184,134,11,0.1)}`}</style>
           <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "2rem 2rem 5rem" }}>
             <div style={{
               display: "grid",
@@ -173,22 +174,13 @@ export default async function ServicesPage() {
               {SERVICES.map(({ icon, title, description, tag }) => (
                 <div
                   key={title}
+                  className="service-card"
                   style={{
                     padding: "2.5rem",
                     border: "1px solid var(--color-gray-200)",
                     background: "var(--color-white)",
                     position: "relative",
                     transition: "border-color 250ms ease, box-shadow 250ms ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget as HTMLDivElement;
-                    el.style.borderColor = "var(--color-primary)";
-                    el.style.boxShadow = "0 4px 24px rgba(184,134,11,0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget as HTMLDivElement;
-                    el.style.borderColor = "var(--color-gray-200)";
-                    el.style.boxShadow = "none";
                   }}
                 >
                   {/* Tag */}
