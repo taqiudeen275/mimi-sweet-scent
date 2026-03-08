@@ -28,6 +28,15 @@ export async function GET(req: NextRequest) {
     dailyViews,
     ordersToday,
     revenueToday,
+    ordersWeek,
+    revenueWeek,
+    ordersMonth,
+    revenueMonth,
+    ordersPrevMonth,
+    revenuePrevMonth,
+    newCustomersToday,
+    newCustomersMonth,
+    activeProducts,
     // Unique visitors — distinct visitorIds in each window
     uniqueToday,
     uniqueWeek,
@@ -61,28 +70,25 @@ export async function GET(req: NextRequest) {
       where: { createdAt: { gte: month } },
       select: { createdAt: true, visitorId: true },
     }),
+    // Business: orders & revenue
     prisma.order.count({ where: { createdAt: { gte: today }, paymentStatus: "PAID" } }),
-    prisma.order.aggregate({
-      where: { createdAt: { gte: today }, paymentStatus: "PAID" },
-      _sum: { totalAmount: true },
-    }),
+    prisma.order.aggregate({ where: { createdAt: { gte: today }, paymentStatus: "PAID" }, _sum: { totalAmount: true } }),
+    prisma.order.count({ where: { createdAt: { gte: week }, paymentStatus: "PAID" } }),
+    prisma.order.aggregate({ where: { createdAt: { gte: week }, paymentStatus: "PAID" }, _sum: { totalAmount: true } }),
+    prisma.order.count({ where: { createdAt: { gte: month }, paymentStatus: "PAID" } }),
+    prisma.order.aggregate({ where: { createdAt: { gte: month }, paymentStatus: "PAID" }, _sum: { totalAmount: true } }),
+    prisma.order.count({ where: { createdAt: { gte: prevMonth, lt: month }, paymentStatus: "PAID" } }),
+    prisma.order.aggregate({ where: { createdAt: { gte: prevMonth, lt: month }, paymentStatus: "PAID" }, _sum: { totalAmount: true } }),
+    // New customers
+    prisma.user.count({ where: { createdAt: { gte: today }, role: "CUSTOMER" } }),
+    prisma.user.count({ where: { createdAt: { gte: month }, role: "CUSTOMER" } }),
+    // Active products
+    prisma.product.count({ where: { status: "ACTIVE" } }),
     // Unique visitors — groupBy visitorId then count distinct rows
-    prisma.pageView.groupBy({
-      by: ["visitorId"],
-      where: { createdAt: { gte: today }, visitorId: { not: null } },
-    }),
-    prisma.pageView.groupBy({
-      by: ["visitorId"],
-      where: { createdAt: { gte: week }, visitorId: { not: null } },
-    }),
-    prisma.pageView.groupBy({
-      by: ["visitorId"],
-      where: { createdAt: { gte: month }, visitorId: { not: null } },
-    }),
-    prisma.pageView.groupBy({
-      by: ["visitorId"],
-      where: { createdAt: { gte: prevMonth, lt: month }, visitorId: { not: null } },
-    }),
+    prisma.pageView.groupBy({ by: ["visitorId"], where: { createdAt: { gte: today }, visitorId: { not: null } } }),
+    prisma.pageView.groupBy({ by: ["visitorId"], where: { createdAt: { gte: week }, visitorId: { not: null } } }),
+    prisma.pageView.groupBy({ by: ["visitorId"], where: { createdAt: { gte: month }, visitorId: { not: null } } }),
+    prisma.pageView.groupBy({ by: ["visitorId"], where: { createdAt: { gte: prevMonth, lt: month }, visitorId: { not: null } } }),
   ]);
 
   // Build daily views + unique visitors map
@@ -105,29 +111,44 @@ export async function GET(req: NextRequest) {
     uniqueVisitors: visitors.size,
   }));
 
+  const revMonthAmt  = revenueMonth._sum.totalAmount  ?? 0;
+  const revPrevAmt   = revenuePrevMonth._sum.totalAmount ?? 0;
+  const ordersTrend  = ordersPrevMonth > 0
+    ? Math.round(((ordersMonth - ordersPrevMonth) / ordersPrevMonth) * 100) : null;
+  const revenueTrend = revPrevAmt > 0
+    ? Math.round(((revMonthAmt - revPrevAmt) / revPrevAmt) * 100) : null;
+
   return NextResponse.json({
-    summary: {
-      totalToday,
-      totalWeek,
-      totalMonth,
-      totalPrevMonth,
-      trendPercent: totalPrevMonth > 0
-        ? Math.round(((totalMonth - totalPrevMonth) / totalPrevMonth) * 100)
-        : null,
-      // Unique visitor counts
-      uniqueToday:     uniqueToday.length,
-      uniqueWeek:      uniqueWeek.length,
-      uniqueMonth:     uniqueMonth.length,
-      uniquePrevMonth: uniquePrevMonth.length,
-      uniqueTrendPercent: uniquePrevMonth.length > 0
+    business: {
+      ordersToday,
+      revenueToday:  revenueToday._sum.totalAmount ?? 0,
+      ordersWeek,
+      revenueWeek:   revenueWeek._sum.totalAmount ?? 0,
+      ordersMonth,
+      revenueMonth:  revMonthAmt,
+      ordersTrend,
+      revenueTrend,
+      newCustomersToday,
+      newCustomersMonth,
+      activeProducts,
+    },
+    traffic: {
+      visitorsToday:    uniqueToday.length,
+      visitorsWeek:     uniqueWeek.length,
+      visitorsMonth:    uniqueMonth.length,
+      visitorsTrend:    uniquePrevMonth.length > 0
         ? Math.round(((uniqueMonth.length - uniquePrevMonth.length) / uniquePrevMonth.length) * 100)
         : null,
-      ordersToday,
-      revenueToday: revenueToday._sum.totalAmount ?? 0,
+      pageViewsToday:   totalToday,
+      pageViewsWeek:    totalWeek,
+      pageViewsMonth:   totalMonth,
+      pageViewsTrend:   totalPrevMonth > 0
+        ? Math.round(((totalMonth - totalPrevMonth) / totalPrevMonth) * 100)
+        : null,
+      deviceSplit: { mobile: mobileCount, desktop: desktopCount },
     },
     topPages:     topPages.map(p => ({ path: p.path, views: p._count.path })),
     topReferrers: topReferrers.map(r => ({ referrer: r.referrer ?? "direct", views: r._count.referrer })),
-    deviceSplit:  { mobile: mobileCount, desktop: desktopCount },
     daily,
   });
 }

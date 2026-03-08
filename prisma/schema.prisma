@@ -394,6 +394,17 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// ─── Site Settings ────────────────────────────────────────────────────────────
+
+/// Key-value store for all site configuration. Values are JSON strings.
+model SiteSetting {
+  key       String   @id
+  value     String   // JSON-encoded value
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
 // ─── Analytics ────────────────────────────────────────────────────────────────
 
 model PageView {

@@ -6,15 +6,18 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 
 const NAV = [
-  { href: "/admin",            label: "Dashboard", icon: "▦" },
-  { href: "/admin/products",   label: "Products",  icon: "◈" },
-  { href: "/admin/orders",     label: "Orders",    icon: "◇" },
-  { href: "/admin/customers",  label: "Customers", icon: "○" },
-  { href: "/admin/discounts",  label: "Discounts", icon: "%" },
-  { href: "/admin/content",    label: "Content",   icon: "☰" },
-  { href: "/admin/analytics",  label: "Analytics", icon: "◎" },
-  { href: "/admin/finance",    label: "Finance",   icon: "◑" },
-  { href: "/admin/logs",       label: "Logs",      icon: "≡" },
+  { href: "/admin",             label: "Dashboard",  icon: "▦" },
+  { href: "/admin/products",    label: "Products",   icon: "◈" },
+  { href: "/admin/orders",      label: "Orders",     icon: "◇" },
+  { href: "/admin/customers",   label: "Customers",  icon: "○" },
+  { href: "/admin/reviews",     label: "Reviews",    icon: "★" },
+  { href: "/admin/wishlists",   label: "Wishlists",  icon: "♡" },
+  { href: "/admin/discounts",   label: "Discounts",  icon: "%" },
+  { href: "/admin/content",     label: "Content",    icon: "☰" },
+  { href: "/admin/analytics",   label: "Analytics",  icon: "◎" },
+  { href: "/admin/finance",     label: "Finance",    icon: "◑" },
+  { href: "/admin/logs",        label: "Logs",       icon: "≡" },
+  { href: "/admin/settings",    label: "Settings",   icon: "⚙" },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

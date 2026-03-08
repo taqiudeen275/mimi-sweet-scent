@@ -16,9 +16,12 @@ export default async function AnalyticsPage() {
         <p style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.5625rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-primary)", marginBottom: "0.5rem", fontWeight: 600 }}>
           Insights
         </p>
-        <h1 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "2rem", fontWeight: 300, color: "var(--color-black)", margin: 0 }}>
-          Traffic & Analytics
+        <h1 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "2rem", fontWeight: 300, color: "var(--color-black)", margin: "0 0 0.375rem" }}>
+          Analytics
         </h1>
+        <p style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.6875rem", color: "rgba(26,26,26,0.5)", margin: 0 }}>
+          Switch between tabs to see your sales performance or how visitors are finding your store.
+        </p>
       </div>
       <AnalyticsClient />
     </div>
