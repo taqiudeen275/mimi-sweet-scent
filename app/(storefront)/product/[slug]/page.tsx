@@ -107,9 +107,10 @@ export default async function ProductPage({ params }: Props) {
 
   const mainImageUrl = product.images[0]?.url ?? "https://images.unsplash.com/photo-1541643600914-78b084683702?w=800";
 
-  const topNotes = product.fragranceNotes.filter((n) => n.type === "TOP");
-  const heartNotes = product.fragranceNotes.filter((n) => n.type === "HEART");
-  const baseNotes = product.fragranceNotes.filter((n) => n.type === "BASE");
+  type NoteItem = (typeof product.fragranceNotes)[number];
+  const topNotes = product.fragranceNotes.filter((n: NoteItem) => n.type === "TOP");
+  const heartNotes = product.fragranceNotes.filter((n: NoteItem) => n.type === "HEART");
+  const baseNotes = product.fragranceNotes.filter((n: NoteItem) => n.type === "BASE");
 
   const details: { label: string; value: string }[] = [];
   if (product.productType === "PERFUME") {

@@ -83,7 +83,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (!product) notFound();
 
   const s = STATUS_STYLE[product.status] ?? STATUS_STYLE.DRAFT;
-  const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+  const totalStock = product.variants.reduce((sum: number, v: (typeof product.variants)[number]) => sum + v.stock, 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>

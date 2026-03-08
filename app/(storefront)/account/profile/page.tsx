@@ -24,7 +24,7 @@ export default async function ProfilePage() {
 
   if (!user) redirect("/account/login");
 
-  const totalSpent = user.orders.reduce((s, o) => s + o.totalAmount, 0) / 100;
+  const totalSpent = user.orders.reduce((s: number, o: (typeof user.orders)[number]) => s + o.totalAmount, 0) / 100;
 
   return (
     <main style={{
