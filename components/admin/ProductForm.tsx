@@ -61,7 +61,6 @@ function slugify(t: string) {
 }
 function emptyVariant(): VariantRow { return { optionLabel: "", sku: "", priceGHS: "", compareAtGHS: "", stock: "0" }; }
 function emptyNote(): NoteRow { return { type: "TOP", name: "", icon: "" }; }
-function emptyImage(): ImageRow { return { url: "", altText: "", position: 0 }; }
 
 // ─── Steps ───────────────────────────────────────────────────────────────────
 
@@ -252,23 +251,49 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "calc(100vh - 64px)" }}>
+      <style>{`
+        .pf-topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 56px; background: var(--color-white); border-bottom: 1px solid var(--color-gray-200); flex-shrink: 0; gap: 1rem; }
+        .pf-topbar-actions { display: flex; gap: 0.75rem; align-items: center; }
+        .pf-shell { display: flex; flex: 1; min-height: 0; }
+        .pf-sidebar { width: 220px; flex-shrink: 0; border-right: 1px solid var(--color-gray-200); background: var(--color-white); padding: 1.5rem 0; display: flex; flex-direction: column; }
+        .pf-sidebar-btn { display: flex; align-items: flex-start; gap: 0.75rem; width: 100%; padding: 0.875rem 1.25rem; background: transparent; border: none; cursor: pointer; text-align: left; transition: all 150ms; }
+        .pf-sidebar-desc { font-family: var(--font-montserrat),sans-serif; font-size: 0.5625rem; color: #9CA3AF; margin: 0; line-height: 1.4; }
+        .pf-sidebar-summary { margin: 1.5rem 1.25rem 0; padding: 0.875rem; background: #F9FAFB; border: 1px solid var(--color-gray-200); }
+        .pf-content { flex: 1; overflow: auto; padding: 2rem 2.5rem 5rem; min-width: 0; }
+        .pf-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .pf-3col { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.625rem; }
+        .pf-variant-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 768px) {
+          .pf-topbar { height: auto; padding: 0.75rem 1rem; flex-wrap: wrap; }
+          .pf-topbar-actions { width: 100%; justify-content: flex-end; }
+          .pf-shell { flex-direction: column; }
+          .pf-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--color-gray-200); padding: 0; flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .pf-sidebar-btn { flex-direction: column; align-items: center; text-align: center; min-width: 72px; padding: 0.625rem 0.75rem; border-left: none !important; border-bottom: 3px solid transparent; }
+          .pf-sidebar-btn.pf-active { border-bottom-color: var(--color-primary) !important; background: rgba(184,134,11,0.06) !important; }
+          .pf-sidebar-desc { display: none; }
+          .pf-sidebar-summary { display: none; }
+          .pf-content { padding: 1.25rem 1rem 4rem; }
+          .pf-2col { grid-template-columns: 1fr; }
+          .pf-variant-wrap { margin: 0 -1rem; padding: 0 1rem; }
+        }
+        @media (max-width: 480px) {
+          .pf-topbar-title { display: none; }
+          .pf-3col { grid-template-columns: 1fr 1fr; }
+        }
+      `}</style>
 
       {/* ── Top bar ── */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 2rem", height: "56px", background: "var(--color-white)",
-        borderBottom: "1px solid var(--color-gray-200)", flexShrink: 0, gap: "1rem",
-      }}>
+      <div className="pf-topbar">
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <a href="/admin/products" style={{ fontFamily: "var(--font-montserrat),sans-serif", fontSize: "0.625rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--color-gray-600)", textDecoration: "none" }}>
             ← Products
           </a>
-          <h1 style={{ fontFamily: "var(--font-cormorant),Georgia,serif", fontSize: "1.375rem", fontWeight: 400, color: "var(--color-black)", margin: 0 }}>
+          <h1 className="pf-topbar-title" style={{ fontFamily: "var(--font-cormorant),Georgia,serif", fontSize: "1.375rem", fontWeight: 400, color: "var(--color-black)", margin: 0 }}>
             {isEdit ? `Editing: ${initial?.name}` : "New Product"}
           </h1>
         </div>
 
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+        <div className="pf-topbar-actions">
           {/* Status badge */}
           <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} style={{
             fontFamily: "var(--font-montserrat),sans-serif", fontSize: "0.5625rem",
@@ -301,20 +326,20 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
         </div>
       )}
 
-      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+      <div className="pf-shell">
 
         {/* ── Step sidebar ── */}
-        <div style={{ width: "220px", flexShrink: 0, borderRight: "1px solid var(--color-gray-200)", background: "var(--color-white)", padding: "1.5rem 0" }}>
+        <div className="pf-sidebar">
           {STEPS.map((s, i) => {
             const isActive = s.id === step;
             const isDone = i < currentStepIdx;
             return (
-              <button key={s.id} onClick={() => { setError(null); setStep(s.id); }} style={{
-                display: "flex", alignItems: "flex-start", gap: "0.75rem", width: "100%",
-                padding: "0.875rem 1.25rem", background: isActive ? "rgba(184,134,11,0.06)" : "transparent",
-                border: "none", borderLeft: isActive ? "3px solid var(--color-primary)" : "3px solid transparent",
-                cursor: "pointer", textAlign: "left", transition: "all 150ms",
-              }}>
+              <button key={s.id} onClick={() => { setError(null); setStep(s.id); }}
+                className={`pf-sidebar-btn${isActive ? " pf-active" : ""}`}
+                style={{
+                  background: isActive ? "rgba(184,134,11,0.06)" : "transparent",
+                  borderLeft: isActive ? "3px solid var(--color-primary)" : "3px solid transparent",
+                }}>
                 <span style={{
                   width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -326,14 +351,14 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
                 </span>
                 <div>
                   <p style={{ fontFamily: "var(--font-montserrat),sans-serif", fontSize: "0.6875rem", fontWeight: isActive ? 600 : 400, color: isActive ? "var(--color-black)" : "var(--color-gray-600)", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</p>
-                  <p style={{ fontFamily: "var(--font-montserrat),sans-serif", fontSize: "0.5625rem", color: "#9CA3AF", margin: 0, lineHeight: 1.4 }}>{s.desc}</p>
+                  <p className="pf-sidebar-desc">{s.desc}</p>
                 </div>
               </button>
             );
           })}
 
           {/* Completion summary */}
-          <div style={{ margin: "1.5rem 1.25rem 0", padding: "0.875rem", background: "#F9FAFB", border: "1px solid var(--color-gray-200)" }}>
+          <div className="pf-sidebar-summary">
             <p style={{ fontFamily: "var(--font-montserrat),sans-serif", fontSize: "0.5rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--color-gray-600)", fontWeight: 600, margin: "0 0 0.5rem" }}>Product summary</p>
             <p style={{ fontFamily: "var(--font-montserrat),sans-serif", fontSize: "0.625rem", color: "var(--color-black)", margin: "0 0 3px" }}>{name || <span style={{ color: "#9CA3AF" }}>No name yet</span>}</p>
             <p style={{ fontFamily: "var(--font-montserrat),sans-serif", fontSize: "0.5625rem", color: "var(--color-gray-600)", margin: "0 0 3px" }}>
@@ -350,7 +375,7 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
         </div>
 
         {/* ── Main content ── */}
-        <div style={{ flex: 1, overflow: "auto", padding: "2rem 2.5rem 5rem", minWidth: 0 }}>
+        <div className="pf-content">
 
           {/* ════ STEP 1: BASICS ════ */}
           {step === "basics" && (
@@ -424,7 +449,7 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
               {productType === "PERFUME" ? (
                 <>
                   <FormCard label="Concentration" required help="The strength of the fragrance. Parfum is strongest, EDT is lightest.">
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "0.625rem" }}>
+                    <div className="pf-3col">
                       {[
                         { val: "PARFUM", label: "Parfum", pct: "20–30%", note: "Strongest" },
                         { val: "EDP", label: "Eau de Parfum", pct: "15–20%", note: "Most popular" },
@@ -457,7 +482,7 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
                     </div>
                   </FormCard>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div className="pf-2col">
                     <FormCard label="Sillage (Projection)" help="How far the scent projects from the skin.">
                       <select value={sillage} onChange={(e) => setSillage(e.target.value)} style={inp}>
                         <option value="">— Select —</option>
@@ -561,7 +586,8 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
             <div style={{ maxWidth: "860px", display: "flex", flexDirection: "column", gap: "2rem" }}>
               <StepHeader title="Variants & Pricing" subtitle="Each variant is a separate option customers can buy (e.g. different sizes, colours, or quantities)." />
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div className="pf-variant-wrap">
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", minWidth: "560px" }}>
                 {/* Header row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr 80px 40px", gap: "0.5rem", padding: "0 0.75rem" }}>
                   {["Option / Size", "SKU", "Price (GHS)", "Compare At", "Stock", ""].map((h) => (
@@ -619,6 +645,7 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
                   + Add Another Variant
                 </button>
               </div>
+              </div>{/* /pf-variant-wrap */}
 
               {/* Help tip */}
               <div style={{ padding: "1rem 1.25rem", background: "#EFF6FF", border: "1px solid #BFDBFE" }}>

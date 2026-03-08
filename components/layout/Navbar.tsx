@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useCart } from "@/contexts/cart-context";
 
+const SHOP_LINKS = [
+  { href: "/fragrances", label: "Fragrances", sub: "Perfumes, EDPs & colognes" },
+  { href: "/jewelry",    label: "Jewelry",    sub: "Necklaces, rings & earrings" },
+  { href: "/shop",       label: "Shop All",   sub: "Browse the full collection" },
+];
+
 const NAV_LINKS = [
-  { href: "/fragrances", label: "Fragrances" },
-  { href: "/jewelry", label: "Jewelry" },
-  { href: "/shop", label: "Shop All" },
-  { href: "/about", label: "About" },
+  { href: "/about",    label: "About" },
   { href: "/services", label: "Services" },
 ];
 
@@ -23,10 +26,12 @@ export function Navbar() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [shopOpen, setShopOpen] = useState(false);
 
   const accountRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const shopRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "MANAGER";
   const isLoggedIn = !!session?.user;
@@ -39,6 +44,9 @@ export function Navbar() {
       }
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setSearchOpen(false);
+      }
+      if (shopRef.current && !shopRef.current.contains(e.target as Node)) {
+        setShopOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -95,6 +103,105 @@ export function Navbar() {
         <div style={{ display: "flex", alignItems: "center" }}>
           {/* Desktop nav */}
           <nav style={{ display: "flex", gap: "2rem", alignItems: "center" }} className="desktop-nav">
+
+            {/* Shop dropdown */}
+            <div ref={shopRef} style={{ position: "relative" }}
+              onMouseEnter={() => setShopOpen(true)}
+              onMouseLeave={() => setShopOpen(false)}
+            >
+              <button
+                onClick={() => setShopOpen(o => !o)}
+                style={{
+                  fontFamily: "var(--font-montserrat), sans-serif",
+                  fontSize: "0.6875rem",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  fontWeight: 500,
+                  color: "var(--color-black)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.3rem",
+                  position: "relative",
+                }}
+                className="nav-link"
+              >
+                Shop
+                <svg
+                  width="10" height="10" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2"
+                  style={{ transition: "transform 200ms ease", transform: shopOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+
+              {/* Flyout */}
+              {shopOpen && (
+                <div style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  paddingTop: "0.875rem",
+                  zIndex: 50,
+                }}>
+                <div style={{
+                  background: "var(--color-white)",
+                  border: "1px solid var(--color-gray-200)",
+                  boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
+                  minWidth: "220px",
+                  animation: "fadeShopDrop 150ms ease",
+                }}>
+                  {/* Gold top accent */}
+                  <div style={{ height: "2px", background: "var(--color-primary)" }} />
+                  {SHOP_LINKS.map(({ href, label, sub }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setShopOpen(false)}
+                      style={{
+                        display: "block",
+                        padding: "0.875rem 1.25rem",
+                        textDecoration: "none",
+                        borderBottom: "1px solid var(--color-gray-200)",
+                        transition: "background 150ms ease",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--color-cream)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <span style={{
+                        display: "block",
+                        fontFamily: "var(--font-montserrat), sans-serif",
+                        fontSize: "0.625rem",
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        fontWeight: 600,
+                        color: "var(--color-black)",
+                        marginBottom: "0.2rem",
+                      }}>
+                        {label}
+                      </span>
+                      <span style={{
+                        display: "block",
+                        fontFamily: "var(--font-montserrat), sans-serif",
+                        fontSize: "0.5625rem",
+                        color: "var(--color-gray-600)",
+                        letterSpacing: "0.03em",
+                      }}>
+                        {sub}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+                </div>
+              )}
+            </div>
+
+            {/* Flat links */}
             {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
@@ -400,6 +507,25 @@ export function Navbar() {
         transition: "max-height 320ms cubic-bezier(0.4, 0, 0.2, 1)",
       }}>
         <div style={{ padding: "0.5rem 1.5rem 1.25rem" }}>
+          {/* Shop links */}
+          {SHOP_LINKS.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                display: "block", padding: "0.875rem 0",
+                fontFamily: "var(--font-montserrat), sans-serif",
+                fontSize: "0.8125rem", letterSpacing: "0.1em",
+                textTransform: "uppercase", color: "var(--color-black)",
+                textDecoration: "none",
+                borderBottom: "1px solid var(--color-gray-200)",
+              }}
+            >
+              {label}
+            </Link>
+          ))}
+          {/* Other links */}
           {NAV_LINKS.map(({ href, label }) => (
             <Link
               key={href}
@@ -474,6 +600,10 @@ export function Navbar() {
         }
         .nav-link:hover::after { transform: scaleX(1); }
         @keyframes fadeDropdown {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeShopDrop {
           from { opacity: 0; transform: translateY(-6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
