@@ -69,7 +69,7 @@ export default async function AdminCustomersPage() {
             </tr>
           </thead>
           <tbody>
-            {customers.map((customer, i) => {
+            {customers.map((customer: (typeof customers)[number], i) => {
               const totalSpent = customer.orders.reduce((s, o) => s + o.totalAmount, 0);
               return (
                 <tr key={customer.id} style={{
