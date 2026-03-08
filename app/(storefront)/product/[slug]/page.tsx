@@ -6,6 +6,14 @@ import type { Metadata } from "next";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  const products = await prisma.product.findMany({
+    where: { status: "ACTIVE" },
+    select: { slug: true },
+  });
+  return products.map((p) => ({ slug: p.slug }));
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
