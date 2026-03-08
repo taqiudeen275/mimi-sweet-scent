@@ -359,7 +359,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               }}>
                 Reviews ({product._count.reviews})
               </h2>
-              {product.reviews.map(review => (
+              {product.reviews.map((review: (typeof product.reviews)[number]) => (
                 <div key={review.id} style={{ padding: "1rem 0", borderBottom: "1px solid var(--color-gray-200)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
