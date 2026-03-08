@@ -3,6 +3,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { logAudit } from "@/lib/auditLog";
 
 const registerSchema = z.object({
   name:     z.string().min(2).max(100),
@@ -49,6 +50,13 @@ export async function POST(req: NextRequest) {
       phone: phone || null,
       role: "CUSTOMER",
     },
+  });
+
+  logAudit({
+    action:     "USER_REGISTERED",
+    category:   "system",
+    actorEmail: email,
+    ipAddress:  ip,
   });
 
   return NextResponse.json({ success: true }, { status: 201 });

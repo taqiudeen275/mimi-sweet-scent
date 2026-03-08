@@ -11,6 +11,9 @@ const NAV = [
   { href: "/admin/customers",   label: "Customers",  icon: "○" },
   { href: "/admin/discounts",   label: "Discounts",  icon: "%" },
   { href: "/admin/content",     label: "Content",    icon: "☰" },
+  { href: "/admin/analytics",   label: "Analytics",  icon: "◎" },
+  { href: "/admin/finance",     label: "Finance",    icon: "◑" },
+  { href: "/admin/logs",        label: "Logs",       icon: "≡" },
 ];
 
 export function AdminSidebar() {

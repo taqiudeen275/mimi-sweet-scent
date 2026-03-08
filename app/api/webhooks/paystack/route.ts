@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/auditLog";
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();

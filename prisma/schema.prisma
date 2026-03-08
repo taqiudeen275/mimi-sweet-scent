@@ -373,3 +373,41 @@ model NewsletterSubscriber {
   subscribedAt DateTime @default(now())
   active       Boolean  @default(true)
 }
+
+// ─── Audit Logs ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String   // e.g. "PRODUCT_CREATED", "ORDER_STATUS_CHANGED", "LOGIN_FAILED"
+  category    String   // "admin" | "security" | "payment" | "system"
+  entityType  String?  // "Product" | "Order" | "DiscountCode" | etc.
+  entityId    String?
+  actorId     String?  // userId of the admin who performed the action
+  actorEmail  String?
+  details     Json?    // arbitrary extra data
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+  @@index([createdAt])
+  @@index([actorId])
+  @@map("audit_logs")
+}
+
+// ─── Analytics ────────────────────────────────────────────────────────────────
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  sessionId String?
+  userId    String?
+  country   String?
+  isMobile  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+  @@map("page_views")
+}

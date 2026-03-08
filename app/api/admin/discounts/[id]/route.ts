@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DiscountType } from "@prisma/client";
+import { logAudit } from "@/lib/auditLog";
 
 export async function PUT(
   request: NextRequest,
@@ -90,11 +91,29 @@ export async function PUT(
     },
   });
 
+  // Detect whether this was a toggle (only `active` changed) or a full update
+  const action =
+    data.active !== undefined &&
+    Object.keys(data).filter(k => k !== "active").length === 0
+      ? "DISCOUNT_TOGGLED"
+      : "DISCOUNT_UPDATED";
+
+  logAudit({
+    action,
+    category:   "admin",
+    entityType: "DiscountCode",
+    entityId:   id,
+    actorId:    session.user?.id,
+    actorEmail: session.user?.email ?? undefined,
+    details:    { code: updated.code, active: updated.active },
+    ipAddress:  request.headers.get("x-forwarded-for") ?? "unknown",
+  });
+
   return NextResponse.json(updated);
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -110,5 +129,17 @@ export async function DELETE(
   }
 
   await prisma.discountCode.delete({ where: { id } });
+
+  logAudit({
+    action:     "DISCOUNT_DELETED",
+    category:   "admin",
+    entityType: "DiscountCode",
+    entityId:   id,
+    actorId:    session.user?.id,
+    actorEmail: session.user?.email ?? undefined,
+    details:    { code: existing.code },
+    ipAddress:  request.headers.get("x-forwarded-for") ?? "unknown",
+  });
+
   return NextResponse.json({ success: true });
 }

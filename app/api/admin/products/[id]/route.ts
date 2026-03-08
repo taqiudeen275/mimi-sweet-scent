@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { z } from "zod";
+import { logAudit } from "@/lib/auditLog";
 
 const ADMIN_ROLES = ["ADMIN", "MANAGER", "CONTENT_EDITOR"];
 
@@ -93,9 +94,12 @@ const updateProductSchema = z.object({
 });
 
 export async function PUT(req: NextRequest, { params }: RouteContext) {
-  const forbidden = await requireAdmin();
-  if (forbidden) return forbidden;
+  const session = await auth();
+  if (!session?.user || !ADMIN_ROLES.includes(session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
+  const ipAddress = req.headers.get("x-forwarded-for") ?? "unknown";
   const { id } = await params;
 
   // Check product exists
@@ -176,15 +180,29 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     });
   });
 
+  logAudit({
+    action:     "PRODUCT_UPDATED",
+    category:   "admin",
+    entityType: "Product",
+    entityId:   id,
+    actorId:    session.user.id,
+    actorEmail: session.user.email ?? undefined,
+    details:    { name: product?.name },
+    ipAddress,
+  });
+
   return NextResponse.json({ data: product });
 }
 
 // ─── DELETE /api/admin/products/[id] ──────────────────────────────────────────
 
-export async function DELETE(_req: NextRequest, { params }: RouteContext) {
-  const forbidden = await requireAdmin();
-  if (forbidden) return forbidden;
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
+  const session = await auth();
+  if (!session?.user || !ADMIN_ROLES.includes(session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
+  const ipAddress = req.headers.get("x-forwarded-for") ?? "unknown";
   const { id } = await params;
 
   const existing = await prisma.product.findUnique({ where: { id } });
@@ -193,6 +211,17 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   }
 
   await prisma.product.delete({ where: { id } });
+
+  logAudit({
+    action:     "PRODUCT_DELETED",
+    category:   "admin",
+    entityType: "Product",
+    entityId:   id,
+    actorId:    session.user.id,
+    actorEmail: session.user.email ?? undefined,
+    details:    { name: existing.name },
+    ipAddress,
+  });
 
   return NextResponse.json({ success: true });
 }

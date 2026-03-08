@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import { logAudit } from "@/lib/auditLog";
 
 const ADMIN_ROLES = ["ADMIN", "MANAGER", "CONTENT_EDITOR"];
 
@@ -110,8 +111,12 @@ const createProductSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const forbidden = await requireAdmin();
-  if (forbidden) return forbidden;
+  const session = await auth();
+  if (!session?.user || !ADMIN_ROLES.includes(session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const ipAddress = req.headers.get("x-forwarded-for") ?? "unknown";
 
   const body   = await req.json();
   const parsed = createProductSchema.safeParse(body);
@@ -133,6 +138,17 @@ export async function POST(req: NextRequest) {
       images:         true,
       fragranceNotes: true,
     },
+  });
+
+  logAudit({
+    action:      "PRODUCT_CREATED",
+    category:    "admin",
+    entityType:  "Product",
+    entityId:    product.id,
+    actorId:     session.user.id,
+    actorEmail:  session.user.email ?? undefined,
+    details:     { name: product.name },
+    ipAddress,
   });
 
   return NextResponse.json({ data: product }, { status: 201 });

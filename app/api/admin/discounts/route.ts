@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DiscountType } from "@prisma/client";
+import { logAudit } from "@/lib/auditLog";
 
 export async function GET() {
   const session = await auth();
@@ -83,6 +84,17 @@ export async function POST(request: NextRequest) {
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       active: data.active ?? true,
     },
+  });
+
+  logAudit({
+    action:     "DISCOUNT_CREATED",
+    category:   "admin",
+    entityType: "DiscountCode",
+    entityId:   discount.id,
+    actorId:    session.user?.id,
+    actorEmail: session.user?.email ?? undefined,
+    details:    { code: discount.code, type: discount.type, value: discount.value },
+    ipAddress:  request.headers.get("x-forwarded-for") ?? "unknown",
   });
 
   return NextResponse.json(discount, { status: 201 });
