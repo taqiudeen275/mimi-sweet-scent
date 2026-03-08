@@ -50,14 +50,28 @@ export default async function RootLayout({
     // Only apply valid hex colors to prevent CSS injection
     const safeHex = (v: string) => /^#[0-9A-Fa-f]{3,8}$/.test(v) ? v : null;
     const safeRadius = (v: string) => /^[0-9]+px$/.test(v) ? v : null;
-    const overrides = [
+
+    // Light-mode-only overrides (bg, text, cream change meaning in dark mode)
+    const lightOverrides = [
       safeHex(theme.primaryColor ?? "") ? `  --color-primary: ${safeHex(theme.primaryColor ?? "")};` : "",
       safeHex(theme.bgColor      ?? "") ? `  --color-white:   ${safeHex(theme.bgColor ?? "")};`      : "",
       safeHex(theme.textColor    ?? "") ? `  --color-black:   ${safeHex(theme.textColor ?? "")};`    : "",
       safeHex(theme.creamColor   ?? "") ? `  --color-cream:   ${safeHex(theme.creamColor ?? "")};`   : "",
       safeRadius(theme.borderRadius ?? "") ? `  --border-radius: ${safeRadius(theme.borderRadius ?? "")};` : "",
     ].filter(Boolean).join("\n");
-    if (overrides) themeCSS = `:root {\n${overrides}\n}`;
+
+    // Dark-mode overrides — only apply primary color (dark bg/text kept from globals.css)
+    const darkOverrides = [
+      safeHex(theme.primaryColor ?? "") ? `  --color-primary: ${safeHex(theme.primaryColor ?? "")};` : "",
+      safeRadius(theme.borderRadius ?? "") ? `  --border-radius: ${safeRadius(theme.borderRadius ?? "")};` : "",
+    ].filter(Boolean).join("\n");
+
+    // :root:not([data-theme="dark"]) targets light mode only → never collides with [data-theme="dark"]
+    // [data-theme="dark"] block propagates primary + radius into dark mode without inverting bg/text
+    const parts: string[] = [];
+    if (lightOverrides) parts.push(`:root:not([data-theme="dark"]) {\n${lightOverrides}\n}`);
+    if (darkOverrides)  parts.push(`[data-theme="dark"] {\n${darkOverrides}\n}`);
+    if (parts.length)   themeCSS = parts.join("\n");
   } catch {
     // DB unavailable — use default CSS variables from globals.css
   }
