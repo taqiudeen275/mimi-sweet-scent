@@ -1,26 +1,236 @@
 @import "tailwindcss";
 
+/* ─── Brand Design Tokens ─────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colors */
+  --color-primary:   #B8860B;  /* Brand gold — CTAs, accents, borders */
+  --color-black:     #1A1A1A;  /* Headlines, navigation, body text */
+  --color-white:     #FFFFFF;  /* Page backgrounds, card surfaces */
+  --color-cream:     #FAF7F0;  /* Section backgrounds, form fields */
+  --color-gray-600:  #555555;  /* Secondary text, labels, metadata */
+  --color-gray-200:  #E0E0E0;  /* Borders, dividers, skeleton loaders */
+  --color-success:   #2D6A4F;  /* Order confirmed, in-stock */
+  --color-error:     #C62828;  /* Form errors, out-of-stock, alerts */
+
+  /* Semantic */
+  --background: var(--color-white);
+  --foreground: var(--color-black);
+
+  /* Transitions */
+  --transition-hover: 250ms ease;
 }
+
+/* ─── Tailwind v4 Theme Extension ─────────────────────────────────────────── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background:  var(--background);
+  --color-foreground:  var(--foreground);
+  --color-primary:     var(--color-primary);
+  --color-cream:       var(--color-cream);
+  --color-gray-200:    var(--color-gray-200);
+  --color-gray-600:    var(--color-gray-600);
+  --color-success:     var(--color-success);
+  --color-error:       var(--color-error);
+
+  --font-display:  var(--font-cormorant), "Georgia", serif;
+  --font-sans:     var(--font-montserrat), "Arial", sans-serif;
+  --font-mono:     ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Base Styles ─────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-montserrat), "Arial", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ─── Typography ──────────────────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-cormorant), "Georgia", serif;
+  line-height: 1.2;
+  color: var(--color-black);
+}
+
+/* Display / Hero: Cormorant Garamond Light 300 Italic, 72–96px */
+.display {
+  font-family: var(--font-cormorant), "Georgia", serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(3rem, 8vw, 6rem);
+  letter-spacing: -0.02em;
+}
+
+/* H1 — Page Title: Cormorant Garamond Medium 500, 48px */
+h1 {
+  font-weight: 500;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.01em;
+}
+
+/* H2 — Section Header: Cormorant Garamond Regular 400, 36px */
+h2 {
+  font-weight: 400;
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
+}
+
+/* H3 — Subsection: Montserrat SemiBold 600, 22px */
+h3 {
+  font-family: var(--font-montserrat), "Arial", sans-serif;
+  font-weight: 600;
+  font-size: 1.375rem;
+}
+
+/* Price: Cormorant Garamond Light 300, 24px */
+.price {
+  font-family: var(--font-cormorant), "Georgia", serif;
+  font-weight: 300;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* Labels / Captions */
+.label {
+  font-family: var(--font-montserrat), "Arial", sans-serif;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-montserrat), "Arial", sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.75rem 2rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color var(--transition-hover),
+              border-color var(--transition-hover),
+              color var(--transition-hover);
+}
+
+/* Primary: black bg, white text → hover: gold bg */
+.btn-primary {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+.btn-primary:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Secondary: transparent, gold border → hover: gold bg, white text */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.btn-secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* ─── Form Inputs (underline style) ──────────────────────────────────────── */
+
+.input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-gray-200);
+  border-radius: 0;
+  padding: 0.5rem 0;
+  font-family: var(--font-montserrat), "Arial", sans-serif;
+  font-size: 1rem;
+  color: var(--color-black);
+  width: 100%;
+  outline: none;
+  transition: border-color var(--transition-hover);
+}
+.input:focus {
+  border-bottom-color: var(--color-primary);
+}
+.input::placeholder {
+  color: var(--color-gray-600);
+  font-size: 0.875rem;
+}
+
+/* ─── Product Cards ───────────────────────────────────────────────────────── */
+
+.product-card {
+  transition: box-shadow var(--transition-hover);
+  overflow: hidden;
+}
+.product-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+.product-card:hover .product-card-image {
+  transform: scale(1.02);
+}
+.product-card-image {
+  transition: transform var(--transition-hover);
+}
+
+/* ─── Skeleton / Loading States ──────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-cream) 25%,
+    var(--color-gray-200) 50%,
+    var(--color-cream) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── Scroll-triggered Fade-Up Animation ─────────────────────────────────── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.6s ease forwards;
+}
+.fade-up-hidden {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* ─── Toast Notifications ────────────────────────────────────────────────── */
+
+@keyframes slideInToast {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.toast {
+  animation: slideInToast 0.3s ease;
 }
