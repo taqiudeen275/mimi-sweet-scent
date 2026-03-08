@@ -82,7 +82,7 @@ export default async function JewelryPage({ searchParams }: PageProps) {
           </p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem" }}>
-            {products.map(product => (
+            {products.map((product: (typeof products)[number]) => (
               <div key={product.id} className="product-grid-item">
                 <ProductCard
                   id={product.id}
@@ -92,7 +92,7 @@ export default async function JewelryPage({ searchParams }: PageProps) {
                   material={product.material}
                   collectionName={product.collection?.name}
                   imageUrl={product.images[0]?.url ?? ""}
-                  variants={product.variants.map(v => ({ id: v.id, optionLabel: v.optionLabel, price: v.price, compareAtPrice: v.compareAtPrice, stock: v.stock }))}
+                  variants={product.variants.map((v: (typeof product.variants)[number]) => ({ id: v.id, optionLabel: v.optionLabel, price: v.price, compareAtPrice: v.compareAtPrice, stock: v.stock }))}
                 />
               </div>
             ))}
