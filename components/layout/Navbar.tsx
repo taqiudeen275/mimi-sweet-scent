@@ -19,48 +19,68 @@ export function Navbar() {
     >
       <div style={{
         maxWidth: "1280px", margin: "0 auto",
-        padding: "0 2rem",
+        padding: "0 1.5rem",
         height: "64px",
         display: "grid",
         gridTemplateColumns: "1fr auto 1fr",
         alignItems: "center",
       }}>
-        {/* Left nav */}
-        <nav style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-          {[
-            { href: "/fragrances", label: "Fragrances" },
-            { href: "/jewelry", label: "Jewelry" },
-            { href: "/shop", label: "Shop All" },
-          ].map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              style={{
-                fontFamily: "var(--font-montserrat), sans-serif",
-                fontSize: "0.6875rem",
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                fontWeight: 500,
-                color: "var(--color-black)",
-                textDecoration: "none",
-              }}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+        {/* Left — desktop nav / mobile hamburger */}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          {/* Desktop nav */}
+          <nav style={{ display: "flex", gap: "2rem", alignItems: "center" }} className="desktop-nav">
+            {[
+              { href: "/fragrances", label: "Fragrances" },
+              { href: "/jewelry", label: "Jewelry" },
+              { href: "/shop", label: "Shop All" },
+            ].map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                style={{
+                  fontFamily: "var(--font-montserrat), sans-serif",
+                  fontSize: "0.6875rem",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  fontWeight: 500,
+                  color: "var(--color-black)",
+                  textDecoration: "none",
+                }}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            className="mobile-hamburger"
+            style={{
+              background: "none", border: "none",
+              cursor: "pointer", padding: "0.5rem",
+              color: "var(--color-black)",
+              display: "flex", alignItems: "center",
+            }}
+          >
+            {menuOpen ? (
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            )}
+          </button>
+        </div>
 
         {/* Center logo */}
-        <Link
-          href="/"
-          style={{
-            textDecoration: "none",
-            textAlign: "center",
-          }}
-        >
+        <Link href="/" style={{ textDecoration: "none", textAlign: "center" }}>
           <span style={{
             fontFamily: "var(--font-cormorant), Georgia, serif",
-            fontSize: "1.125rem",
+            fontSize: "clamp(0.9375rem, 2.5vw, 1.125rem)",
             fontWeight: 400,
             letterSpacing: "0.18em",
             textTransform: "uppercase",
@@ -118,13 +138,15 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu (simple implementation) */}
-      {menuOpen && (
-        <div style={{
-          background: "var(--color-white)",
-          borderTop: "1px solid var(--color-gray-200)",
-          padding: "1.5rem",
-        }}>
+      {/* Mobile menu */}
+      <div style={{
+        background: "var(--color-white)",
+        borderTop: "1px solid var(--color-gray-200)",
+        overflow: "hidden",
+        maxHeight: menuOpen ? "320px" : "0",
+        transition: "max-height 300ms ease",
+      }}>
+        <div style={{ padding: "0.75rem 1.5rem 1.5rem" }}>
           {[
             { href: "/fragrances", label: "Fragrances" },
             { href: "/jewelry", label: "Jewelry" },
@@ -136,9 +158,9 @@ export function Navbar() {
               href={href}
               onClick={() => setMenuOpen(false)}
               style={{
-                display: "block", padding: "0.75rem 0",
+                display: "block", padding: "0.875rem 0",
                 fontFamily: "var(--font-montserrat), sans-serif",
-                fontSize: "0.875rem", letterSpacing: "0.08em",
+                fontSize: "0.8125rem", letterSpacing: "0.1em",
                 textTransform: "uppercase", color: "var(--color-black)",
                 textDecoration: "none",
                 borderBottom: "1px solid var(--color-gray-200)",
@@ -148,7 +170,16 @@ export function Navbar() {
             </Link>
           ))}
         </div>
-      )}
+      </div>
+
+      <style>{`
+        .desktop-nav { display: flex !important; }
+        .mobile-hamburger { display: none !important; }
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-hamburger { display: flex !important; }
+        }
+      `}</style>
     </header>
   );
 }

@@ -1,14 +1,166 @@
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
+import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Customers" };
+export const revalidate = 60;
 
-export default function AdminCustomersPage() {
+export default async function AdminCustomersPage() {
+  const customers = await prisma.user.findMany({
+    where: { role: "CUSTOMER" },
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: { select: { orders: true } },
+      orders: {
+        where: { paymentStatus: "PAID" },
+        select: { totalAmount: true },
+      },
+    },
+  });
+
   return (
-    <div>
-      <h2 style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "2rem", marginBottom: "1.5rem" }}>
-        Customers
-      </h2>
-      <p style={{ color: "var(--color-gray-600)" }}>Customer management — coming in Phase 4.</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h1 style={{
+          fontFamily: "var(--font-cormorant), Georgia, serif",
+          fontSize: "2rem",
+          fontWeight: 400,
+          color: "var(--color-black)",
+          margin: 0,
+        }}>
+          Customers
+        </h1>
+        <span style={{
+          fontFamily: "var(--font-montserrat), sans-serif",
+          fontSize: "0.6875rem",
+          color: "var(--color-gray-600)",
+        }}>
+          {customers.length} registered
+        </span>
+      </div>
+
+      <div style={{ background: "var(--color-white)", border: "1px solid var(--color-gray-200)" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: "1px solid var(--color-gray-200)", background: "#FAFAFA" }}>
+              {["Name", "Email", "Phone", "Orders", "Total Spent", "Joined"].map((h) => (
+                <th key={h} style={{
+                  padding: "0.875rem 1.25rem",
+                  textAlign: "left",
+                  fontFamily: "var(--font-montserrat), sans-serif",
+                  fontSize: "0.5625rem",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "var(--color-gray-600)",
+                  fontWeight: 500,
+                }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map((customer, i) => {
+              const totalSpent = customer.orders.reduce((s, o) => s + o.totalAmount, 0);
+              return (
+                <tr key={customer.id} style={{
+                  borderBottom: i < customers.length - 1 ? "1px solid var(--color-gray-200)" : "none",
+                }}>
+                  <td style={{ padding: "1rem 1.25rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <div style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        background: "var(--color-primary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        <span style={{
+                          fontFamily: "var(--font-montserrat), sans-serif",
+                          fontSize: "0.6875rem",
+                          color: "var(--color-white)",
+                          fontWeight: 600,
+                        }}>
+                          {(customer.name ?? customer.email).charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontFamily: "var(--font-cormorant), Georgia, serif",
+                        fontSize: "1rem",
+                        color: "var(--color-black)",
+                      }}>
+                        {customer.name ?? "—"}
+                      </span>
+                    </div>
+                  </td>
+                  <td style={{ padding: "1rem 1.25rem" }}>
+                    <span style={{
+                      fontFamily: "var(--font-montserrat), sans-serif",
+                      fontSize: "0.6875rem",
+                      color: "var(--color-gray-600)",
+                    }}>
+                      {customer.email}
+                    </span>
+                  </td>
+                  <td style={{ padding: "1rem 1.25rem" }}>
+                    <span style={{
+                      fontFamily: "var(--font-montserrat), sans-serif",
+                      fontSize: "0.6875rem",
+                      color: "var(--color-gray-600)",
+                    }}>
+                      {customer.phone ?? "—"}
+                    </span>
+                  </td>
+                  <td style={{ padding: "1rem 1.25rem" }}>
+                    <span style={{
+                      fontFamily: "var(--font-montserrat), sans-serif",
+                      fontSize: "0.75rem",
+                      color: "var(--color-black)",
+                      fontWeight: customer._count.orders > 0 ? 600 : 400,
+                    }}>
+                      {customer._count.orders}
+                    </span>
+                  </td>
+                  <td style={{ padding: "1rem 1.25rem" }}>
+                    <span style={{
+                      fontFamily: "var(--font-cormorant), Georgia, serif",
+                      fontSize: "0.9375rem",
+                      color: totalSpent > 0 ? "var(--color-primary)" : "var(--color-gray-400)",
+                    }}>
+                      {totalSpent > 0 ? formatPrice(totalSpent) : "—"}
+                    </span>
+                  </td>
+                  <td style={{ padding: "1rem 1.25rem" }}>
+                    <span style={{
+                      fontFamily: "var(--font-montserrat), sans-serif",
+                      fontSize: "0.6875rem",
+                      color: "var(--color-gray-600)",
+                    }}>
+                      {customer.createdAt.toLocaleDateString("en-GH")}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+            {customers.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{
+                  padding: "3rem",
+                  textAlign: "center",
+                  fontFamily: "var(--font-montserrat), sans-serif",
+                  fontSize: "0.8125rem",
+                  color: "var(--color-gray-400)",
+                }}>
+                  No customers yet
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
