@@ -192,7 +192,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 Images
               </h2>
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                {product.images.map((img, i) => (
+                {product.images.map((img: (typeof product.images)[number], i: number) => (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     key={img.id}
@@ -323,7 +323,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody>
-                {product.variants.map((v, i) => (
+                {product.variants.map((v: (typeof product.variants)[number], i: number) => (
                   <tr key={v.id} style={{ borderBottom: "1px solid var(--color-gray-200)", background: i % 2 === 1 ? "#FAFAFA" : "var(--color-white)" }}>
                     <td style={{ padding: "0.75rem 0.875rem", fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.8125rem", color: "var(--color-black)" }}>{v.optionLabel}</td>
                     <td style={{ padding: "0.75rem 0.875rem", fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.75rem", color: "var(--color-gray-600)", letterSpacing: "0.04em" }}>{v.sku}</td>

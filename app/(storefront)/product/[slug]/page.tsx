@@ -17,7 +17,7 @@ export async function generateStaticParams() {
     where: { status: "ACTIVE" },
     select: { slug: true },
   });
-  return products.map((p) => ({ slug: p.slug }));
+  return products.map((p: (typeof products)[number]) => ({ slug: p.slug }));
 }
 
 interface Props {
@@ -246,7 +246,7 @@ export default async function ProductPage({ params }: Props) {
             productSlug={product.slug}
             productType={product.productType}
             imageUrl={mainImageUrl}
-            variants={product.variants.map((v) => ({
+            variants={product.variants.map((v: (typeof product.variants)[number]) => ({
               id: v.id,
               optionLabel: v.optionLabel,
               price: v.price,
@@ -483,7 +483,7 @@ function NoteRow({ label, notes }: { label: string; notes: { id: string; name: s
         {label}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.375rem" }}>
-        {notes.map((n) => (
+        {notes.map((n: (typeof notes)[number]) => (
           <span key={n.id} style={{
             fontFamily: "var(--font-cormorant), Georgia, serif",
             fontSize: "0.9375rem",
