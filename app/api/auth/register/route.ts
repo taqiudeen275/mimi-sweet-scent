@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const registerSchema = z.object({
   name:     z.string().min(2).max(100),
@@ -11,6 +12,16 @@ const registerSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Rate limiting: 5 registrations per IP per hour
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const rl = checkRateLimit(`register:${ip}`, { max: 5, windowMs: 60 * 60 * 1000 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many registration attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
   const body = await req.json();
 
   const parsed = registerSchema.safeParse(body);

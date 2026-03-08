@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 
@@ -6,6 +8,11 @@ export const metadata: Metadata = { title: "Customers" };
 export const revalidate = 60;
 
 export default async function AdminCustomersPage() {
+  const session = await auth();
+  if (!session?.user?.id || !["ADMIN", "MANAGER", "FULFILLMENT_STAFF"].includes(session.user.role ?? "")) {
+    redirect("/");
+  }
+
   const customers = await prisma.user.findMany({
     where: { role: "CUSTOMER" },
     orderBy: { createdAt: "desc" },

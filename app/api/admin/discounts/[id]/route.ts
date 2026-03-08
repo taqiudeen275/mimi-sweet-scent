@@ -9,7 +9,7 @@ export async function PUT(
 ) {
   const session = await auth();
   if (!session || !["ADMIN", "MANAGER"].includes(session.user?.role ?? "")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;
@@ -99,7 +99,7 @@ export async function DELETE(
 ) {
   const session = await auth();
   if (!session || !["ADMIN", "MANAGER"].includes(session.user?.role ?? "")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;

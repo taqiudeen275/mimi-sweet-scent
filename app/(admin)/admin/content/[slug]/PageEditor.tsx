@@ -33,7 +33,12 @@ function renderMarkdown(md: string): string {
     .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:2rem 0">')
     .replace(/^- (.+)$/gm, '<li style="margin:0.25rem 0">$1</li>')
     .replace(/^[0-9]+\. (.+)$/gm, '<li style="margin:0.25rem 0">$1</li>')
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color:var(--color-primary);text-decoration:underline" target="_blank">$1</a>')
+    .replace(/\[(.+?)\]\((.+?)\)/g, (_, text, url) => {
+      // Only allow safe URL schemes — block javascript:, data:, vbscript:, etc.
+      const safe = /^(https?:\/\/|\/|mailto:|#)/.test(url.trim());
+      const href = safe ? url.trim() : "#";
+      return `<a href="${href}" style="color:var(--color-primary);text-decoration:underline" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    })
     .replace(/\n\n/g, '</p><p style="margin:0 0 1rem;line-height:1.75">')
     .replace(/\n/g, "<br/>");
 

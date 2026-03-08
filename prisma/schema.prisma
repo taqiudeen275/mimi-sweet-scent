@@ -366,3 +366,10 @@ model MediaAsset {
 
   @@map("media_assets")
 }
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  subscribedAt DateTime @default(now())
+  active       Boolean  @default(true)
+}

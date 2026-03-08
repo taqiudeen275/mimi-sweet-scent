@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { OrderStatusUpdater } from "./OrderStatusUpdater";
@@ -23,6 +25,11 @@ const PAY_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 export default async function AdminOrdersPage() {
+  const session = await auth();
+  if (!session?.user?.id || !["ADMIN", "MANAGER", "FULFILLMENT_STAFF"].includes(session.user.role ?? "")) {
+    redirect("/");
+  }
+
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: {

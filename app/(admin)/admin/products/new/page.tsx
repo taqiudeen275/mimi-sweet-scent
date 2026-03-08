@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { ProductForm, type ProductFormData } from "@/components/admin/ProductForm";
 
 export const metadata: Metadata = { title: "New Product" };
@@ -27,7 +29,12 @@ const defaultForm: ProductFormData = {
   images:          [],
 };
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  const session = await auth();
+  if (!session?.user?.id || !["ADMIN", "MANAGER", "FULFILLMENT_STAFF", "CONTENT_EDITOR"].includes(session.user.role ?? "")) {
+    redirect("/");
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
       {/* Breadcrumb */}

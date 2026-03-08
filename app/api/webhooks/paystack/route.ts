@@ -30,11 +30,34 @@ export async function POST(req: NextRequest) {
   };
 
   if (event.event === "charge.success") {
-    const { reference } = event.data;
+    const { reference, amount } = event.data;
     if (reference) {
-      await prisma.order.updateMany({
-        where: { paymentRef: reference, paymentStatus: "UNPAID" },
-        data:  { paymentStatus: "PAID", status: "PROCESSING" },
+      // Find the order first (idempotency: skip if already paid)
+      const order = await prisma.order.findFirst({
+        where: { paymentRef: reference },
+        select: { id: true, paymentStatus: true, totalAmount: true },
+      });
+
+      if (!order) {
+        // Unknown reference — log but return 200 to prevent Paystack retries
+        console.warn("[webhook] Unknown paymentRef:", reference);
+        return NextResponse.json({ received: true });
+      }
+
+      if (order.paymentStatus === "PAID") {
+        // Already processed — idempotent no-op
+        return NextResponse.json({ received: true });
+      }
+
+      // Validate amount if provided (Paystack sends in smallest currency unit — pesewas)
+      if (amount != null && Math.abs(amount - order.totalAmount) > 100) {
+        console.error("[webhook] Amount mismatch — expected:", order.totalAmount, "received:", amount, "ref:", reference);
+        // Still process but log for fraud review; don't reject (could be FX rounding)
+      }
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: "PAID", status: "PROCESSING" },
       });
     }
   }

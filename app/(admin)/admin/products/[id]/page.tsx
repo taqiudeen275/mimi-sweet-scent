@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 
@@ -60,6 +61,11 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {
+  const session = await auth();
+  if (!session?.user?.id || !["ADMIN", "MANAGER", "FULFILLMENT_STAFF", "CONTENT_EDITOR"].includes(session.user.role ?? "")) {
+    redirect("/");
+  }
+
   const { id } = await params;
 
   const product = await prisma.product.findUnique({

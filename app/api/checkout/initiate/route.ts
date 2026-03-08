@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const cartItemSchema = z.object({
   variantId:    z.string(),
@@ -26,6 +28,17 @@ const checkoutSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const rl = checkRateLimit(`checkout:${ip}`, { max: 10, windowMs: 60 * 60 * 1000 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many checkout attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
+  const session = await auth();
+
   const body = await req.json();
 
   const parsed = checkoutSchema.safeParse(body);
@@ -66,6 +79,7 @@ export async function POST(req: NextRequest) {
       email,
       totalAmount,
       shippingAddress,
+      userId: session?.user?.id ?? null,
       status: "PENDING",
       paymentStatus: "UNPAID",
       items: {

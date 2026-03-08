@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { ProductFilters } from "@/components/admin/ProductFilters";
@@ -21,6 +23,11 @@ interface PageProps {
 }
 
 export default async function AdminProductsPage({ searchParams }: PageProps) {
+  const session = await auth();
+  if (!session?.user?.id || !["ADMIN", "MANAGER", "FULFILLMENT_STAFF", "CONTENT_EDITOR"].includes(session.user.role ?? "")) {
+    redirect("/");
+  }
+
   const params = await searchParams;
   const q      = params.q      ?? "";
   const type   = params.type   ?? "";

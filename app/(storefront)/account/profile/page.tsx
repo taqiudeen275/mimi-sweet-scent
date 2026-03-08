@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -157,7 +158,7 @@ export default async function ProfilePage() {
             { label: "Phone", value: user.phone ?? "—" },
             { label: "Role", value: user.role },
           ].map(({ label, value }) => (
-            <>
+            <Fragment key={label}>
               <dt key={`${label}-dt`} style={{
                 fontFamily: "var(--font-montserrat), sans-serif",
                 fontSize: "0.625rem",
@@ -177,7 +178,7 @@ export default async function ProfilePage() {
               }}>
                 {value}
               </dd>
-            </>
+            </Fragment>
           ))}
         </dl>
       </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { auth } from "@/auth";
 
 const querySchema = z.object({
   page:        z.coerce.number().min(1).default(1),
@@ -24,10 +25,15 @@ export async function GET(req: NextRequest) {
   const { page, limit, type, gender, collection, status, sort, search } = parsed.data;
   const skip = (page - 1) * limit;
 
+  const session = await auth();
+  const isAdmin = session?.user?.role && ["ADMIN", "MANAGER", "CONTENT_EDITOR"].includes(session.user.role);
+  // Only admins can filter by non-ACTIVE status
+  const resolvedStatus = isAdmin && status ? status : "ACTIVE";
+
   const where = {
     ...(type && { productType: type }),
     ...(gender && { genderTag: gender }),
-    ...(status ? { status } : { status: "ACTIVE" as const }),
+    status: resolvedStatus as "DRAFT" | "ACTIVE" | "ARCHIVED",
     ...(collection && { collection: { slug: collection } }),
     ...(search && {
       OR: [

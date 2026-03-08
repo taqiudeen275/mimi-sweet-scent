@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 
@@ -15,6 +17,11 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default async function AdminDashboardPage() {
+  const session = await auth();
+  if (!session?.user?.id || !["ADMIN", "MANAGER", "FULFILLMENT_STAFF", "CONTENT_EDITOR"].includes(session.user.role ?? "")) {
+    redirect("/");
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
