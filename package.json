@@ -10,7 +10,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:seed": "bun prisma/seed.ts"
   },
   "dependencies": {
     "@paystack/inline-js": "^2.22.8",
