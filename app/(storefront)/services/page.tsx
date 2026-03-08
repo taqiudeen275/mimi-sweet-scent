@@ -2,13 +2,20 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await prisma.page.findUnique({ where: { slug: "services" } });
-  return {
-    title: page?.metaTitle ?? page?.title ?? "Our Services — Mimi's Sweet Scent",
-    description:
-      page?.metaDesc ??
-      "Discover the range of luxury services at Mimi's Sweet Scent — from bespoke consultations to corporate gifting.",
-  };
+  try {
+    const page = await prisma.page.findUnique({ where: { slug: "services" } });
+    return {
+      title: page?.metaTitle ?? page?.title ?? "Our Services — Mimi's Sweet Scent",
+      description:
+        page?.metaDesc ??
+        "Discover the range of luxury services at Mimi's Sweet Scent — from bespoke consultations to corporate gifting.",
+    };
+  } catch {
+    return {
+      title: "Our Services — Mimi's Sweet Scent",
+      description: "Discover the range of luxury services at Mimi's Sweet Scent — from bespoke consultations to corporate gifting.",
+    };
+  }
 }
 
 export const revalidate = 3600;
@@ -59,7 +66,8 @@ const SERVICES = [
 ];
 
 export default async function ServicesPage() {
-  const page = await prisma.page.findUnique({ where: { slug: "services" } });
+  let page = null;
+  try { page = await prisma.page.findUnique({ where: { slug: "services" } }); } catch { /* DB unavailable */ }
 
   return (
     <div>

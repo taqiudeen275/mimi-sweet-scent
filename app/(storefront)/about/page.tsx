@@ -2,13 +2,20 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await prisma.page.findUnique({ where: { slug: "about" } });
-  return {
-    title: page?.metaTitle ?? page?.title ?? "About Us — Mimi's Sweet Scent",
-    description:
-      page?.metaDesc ??
-      "Discover the story behind Mimi's Sweet Scent — a curated collection of luxury perfumes and fine jewelry.",
-  };
+  try {
+    const page = await prisma.page.findUnique({ where: { slug: "about" } });
+    return {
+      title: page?.metaTitle ?? page?.title ?? "About Us — Mimi's Sweet Scent",
+      description:
+        page?.metaDesc ??
+        "Discover the story behind Mimi's Sweet Scent — a curated collection of luxury perfumes and fine jewelry.",
+    };
+  } catch {
+    return {
+      title: "About Us — Mimi's Sweet Scent",
+      description: "Discover the story behind Mimi's Sweet Scent — a curated collection of luxury perfumes and fine jewelry.",
+    };
+  }
 }
 
 export const revalidate = 3600;
@@ -35,7 +42,8 @@ const VALUES = [
 ];
 
 export default async function AboutPage() {
-  const page = await prisma.page.findUnique({ where: { slug: "about" } });
+  let page = null;
+  try { page = await prisma.page.findUnique({ where: { slug: "about" } }); } catch { /* DB unavailable */ }
 
   return (
     <div>
