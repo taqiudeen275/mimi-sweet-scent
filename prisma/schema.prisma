@@ -402,6 +402,7 @@ model PageView {
   referrer  String?
   userAgent String?
   sessionId String?
+  visitorId String?  // persistent cookie (1yr) or daily-salted hashed IP fallback
   userId    String?
   country   String?
   isMobile  Boolean  @default(false)
@@ -409,5 +410,6 @@ model PageView {
 
   @@index([path])
   @@index([createdAt])
+  @@index([visitorId])
   @@map("page_views")
 }

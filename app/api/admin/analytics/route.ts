@@ -10,10 +10,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const now   = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const week  = new Date(today); week.setDate(week.getDate() - 7);
-  const month = new Date(today); month.setDate(month.getDate() - 30);
+  const now       = new Date();
+  const today     = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const week      = new Date(today); week.setDate(week.getDate() - 7);
+  const month     = new Date(today); month.setDate(month.getDate() - 30);
   const prevMonth = new Date(today); prevMonth.setDate(prevMonth.getDate() - 60);
 
   const [
@@ -28,6 +28,11 @@ export async function GET(req: NextRequest) {
     dailyViews,
     ordersToday,
     revenueToday,
+    // Unique visitors — distinct visitorIds in each window
+    uniqueToday,
+    uniqueWeek,
+    uniqueMonth,
+    uniquePrevMonth,
   ] = await Promise.all([
     prisma.pageView.count({ where: { createdAt: { gte: today } } }),
     prisma.pageView.count({ where: { createdAt: { gte: week } } }),
@@ -51,31 +56,54 @@ export async function GET(req: NextRequest) {
     }),
     prisma.pageView.count({ where: { createdAt: { gte: month }, isMobile: true } }),
     prisma.pageView.count({ where: { createdAt: { gte: month }, isMobile: false } }),
-    // Last 30 days daily view counts - using findMany then aggregating
+    // Last 30 days daily views (for chart)
     prisma.pageView.findMany({
       where: { createdAt: { gte: month } },
-      select: { createdAt: true },
+      select: { createdAt: true, visitorId: true },
     }),
-    // Orders and revenue today
     prisma.order.count({ where: { createdAt: { gte: today }, paymentStatus: "PAID" } }),
     prisma.order.aggregate({
       where: { createdAt: { gte: today }, paymentStatus: "PAID" },
       _sum: { totalAmount: true },
     }),
+    // Unique visitors — groupBy visitorId then count distinct rows
+    prisma.pageView.groupBy({
+      by: ["visitorId"],
+      where: { createdAt: { gte: today }, visitorId: { not: null } },
+    }),
+    prisma.pageView.groupBy({
+      by: ["visitorId"],
+      where: { createdAt: { gte: week }, visitorId: { not: null } },
+    }),
+    prisma.pageView.groupBy({
+      by: ["visitorId"],
+      where: { createdAt: { gte: month }, visitorId: { not: null } },
+    }),
+    prisma.pageView.groupBy({
+      by: ["visitorId"],
+      where: { createdAt: { gte: prevMonth, lt: month }, visitorId: { not: null } },
+    }),
   ]);
 
-  // Build daily views map
-  const dailyMap: Record<string, number> = {};
+  // Build daily views + unique visitors map
+  const dailyMap: Record<string, { views: number; visitors: Set<string> }> = {};
   for (let i = 29; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    dailyMap[d.toISOString().slice(0, 10)] = 0;
+    dailyMap[d.toISOString().slice(0, 10)] = { views: 0, visitors: new Set() };
   }
   for (const pv of dailyViews) {
     const key = pv.createdAt.toISOString().slice(0, 10);
-    if (key in dailyMap) dailyMap[key]++;
+    if (key in dailyMap) {
+      dailyMap[key].views++;
+      if (pv.visitorId) dailyMap[key].visitors.add(pv.visitorId);
+    }
   }
-  const daily = Object.entries(dailyMap).map(([date, views]) => ({ date, views }));
+  const daily = Object.entries(dailyMap).map(([date, { views, visitors }]) => ({
+    date,
+    views,
+    uniqueVisitors: visitors.size,
+  }));
 
   return NextResponse.json({
     summary: {
@@ -86,12 +114,20 @@ export async function GET(req: NextRequest) {
       trendPercent: totalPrevMonth > 0
         ? Math.round(((totalMonth - totalPrevMonth) / totalPrevMonth) * 100)
         : null,
+      // Unique visitor counts
+      uniqueToday:     uniqueToday.length,
+      uniqueWeek:      uniqueWeek.length,
+      uniqueMonth:     uniqueMonth.length,
+      uniquePrevMonth: uniquePrevMonth.length,
+      uniqueTrendPercent: uniquePrevMonth.length > 0
+        ? Math.round(((uniqueMonth.length - uniquePrevMonth.length) / uniquePrevMonth.length) * 100)
+        : null,
       ordersToday,
       revenueToday: revenueToday._sum.totalAmount ?? 0,
     },
-    topPages: topPages.map(p => ({ path: p.path, views: p._count.path })),
+    topPages:     topPages.map(p => ({ path: p.path, views: p._count.path })),
     topReferrers: topReferrers.map(r => ({ referrer: r.referrer ?? "direct", views: r._count.referrer })),
-    deviceSplit: { mobile: mobileCount, desktop: desktopCount },
+    deviceSplit:  { mobile: mobileCount, desktop: desktopCount },
     daily,
   });
 }

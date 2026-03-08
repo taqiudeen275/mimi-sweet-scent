@@ -7,6 +7,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from "recharts";
 
@@ -17,13 +18,18 @@ interface AnalyticsData {
     totalMonth: number;
     totalPrevMonth: number;
     trendPercent: number | null;
+    uniqueToday: number;
+    uniqueWeek: number;
+    uniqueMonth: number;
+    uniquePrevMonth: number;
+    uniqueTrendPercent: number | null;
     ordersToday: number;
     revenueToday: number;
   };
   topPages: { path: string; views: number }[];
   topReferrers: { referrer: string; views: number }[];
   deviceSplit: { mobile: number; desktop: number };
-  daily: { date: string; views: number }[];
+  daily: { date: string; views: number; uniqueVisitors: number }[];
 }
 
 function StatCard({
@@ -134,12 +140,12 @@ export function AnalyticsClient() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(5, 1fr)",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
             gap: "1rem",
             marginBottom: "2rem",
           }}
         >
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
@@ -205,15 +211,10 @@ export function AnalyticsClient() {
     );
   }
 
-  const trendBadge =
-    summary.trendPercent !== null ? (
-      <span
-        style={{
-          color: summary.trendPercent >= 0 ? "#16a34a" : "#dc2626",
-          fontWeight: 600,
-        }}
-      >
-        {summary.trendPercent >= 0 ? "↑" : "↓"} {Math.abs(summary.trendPercent)}% vs prev 30d
+  const trendBadge = (pct: number | null) =>
+    pct !== null ? (
+      <span style={{ color: pct >= 0 ? "#16a34a" : "#dc2626", fontWeight: 600 }}>
+        {pct >= 0 ? "↑" : "↓"} {Math.abs(pct)}% vs prev 30d
       </span>
     ) : null;
 
@@ -244,17 +245,30 @@ export function AnalyticsClient() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
           gap: "1rem",
           marginBottom: "2rem",
         }}
       >
-        <StatCard label="Visits Today" value={summary.totalToday.toLocaleString()} />
-        <StatCard label="This Week" value={summary.totalWeek.toLocaleString()} />
         <StatCard
-          label="This Month"
+          label="Page Views Today"
+          value={summary.totalToday.toLocaleString()}
+          sub={<span style={{ color: "rgba(26,26,26,0.45)" }}>{summary.uniqueToday.toLocaleString()} unique</span>}
+        />
+        <StatCard
+          label="Views This Week"
+          value={summary.totalWeek.toLocaleString()}
+          sub={<span style={{ color: "rgba(26,26,26,0.45)" }}>{summary.uniqueWeek.toLocaleString()} unique</span>}
+        />
+        <StatCard
+          label="Views This Month"
           value={summary.totalMonth.toLocaleString()}
-          sub={trendBadge}
+          sub={trendBadge(summary.trendPercent)}
+        />
+        <StatCard
+          label="Unique Visitors"
+          value={summary.uniqueMonth.toLocaleString()}
+          sub={trendBadge(summary.uniqueTrendPercent)}
         />
         <StatCard label="Orders Today" value={summary.ordersToday.toLocaleString()} />
         <StatCard
@@ -274,7 +288,7 @@ export function AnalyticsClient() {
           boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
         }}
       >
-        {sectionTitle("Page Views — Last 30 Days")}
+        {sectionTitle("Page Views & Unique Visitors — Last 30 Days")}
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={daily} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
             <defs>
@@ -282,46 +296,35 @@ export function AnalyticsClient() {
                 <stop offset="5%" stopColor="#B8860B" stopOpacity={0.2} />
                 <stop offset="95%" stopColor="#B8860B" stopOpacity={0} />
               </linearGradient>
+              <linearGradient id="tealGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#0D9488" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#0D9488" stopOpacity={0} />
+              </linearGradient>
             </defs>
             <XAxis
               dataKey="date"
-              tick={{
-                fontFamily: "var(--font-montserrat), sans-serif",
-                fontSize: 9,
-                fill: "rgba(26,26,26,0.4)",
-              }}
+              tick={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: 9, fill: "rgba(26,26,26,0.4)" }}
               tickLine={false}
               axisLine={false}
               tickFormatter={(v: string, i: number) => (i % 5 === 0 ? v.slice(5) : "")}
             />
             <YAxis
-              tick={{
-                fontFamily: "var(--font-montserrat), sans-serif",
-                fontSize: 9,
-                fill: "rgba(26,26,26,0.4)",
-              }}
+              tick={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: 9, fill: "rgba(26,26,26,0.4)" }}
               tickLine={false}
               axisLine={false}
               allowDecimals={false}
             />
             <Tooltip
-              contentStyle={{
-                fontFamily: "var(--font-montserrat), sans-serif",
-                fontSize: "0.6875rem",
-                border: "1px solid #e8e4dc",
-                borderRadius: "2px",
-                background: "#fff",
-              }}
+              contentStyle={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.6875rem", border: "1px solid #e8e4dc", borderRadius: "2px", background: "#fff" }}
               labelStyle={{ color: "var(--color-primary)", fontWeight: 600 }}
             />
-            <Area
-              type="monotone"
-              dataKey="views"
-              stroke="#B8860B"
-              strokeWidth={1.5}
-              fill="url(#goldGradient)"
-              dot={false}
+            <Legend
+              iconType="circle"
+              iconSize={7}
+              wrapperStyle={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.5625rem", paddingTop: "0.5rem" }}
             />
+            <Area type="monotone" dataKey="views" name="Page Views" stroke="#B8860B" strokeWidth={1.5} fill="url(#goldGradient)" dot={false} />
+            <Area type="monotone" dataKey="uniqueVisitors" name="Unique Visitors" stroke="#0D9488" strokeWidth={1.5} fill="url(#tealGradient)" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
