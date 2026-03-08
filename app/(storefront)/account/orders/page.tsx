@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
@@ -156,13 +157,12 @@ export default async function OrdersPage() {
                     return (
                       <div key={item.id} style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
                         {imageUrl ? (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img
+                          <Image
                             src={imageUrl}
                             alt={item.productVariant.product.name}
+                            width={52}
+                            height={64}
                             style={{
-                              width: "52px",
-                              height: "64px",
                               objectFit: "cover",
                               flexShrink: 0,
                               background: "var(--color-cream)",

@@ -45,6 +45,11 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [discountCode, setDiscountCode]       = useState("");
+  const [discountApplied, setDiscountApplied] = useState<{ code: string; discountAmount: number; finalTotal: number; type: string } | null>(null);
+  const [discountError, setDiscountError]     = useState<string | null>(null);
+  const [applyingDiscount, setApplyingDiscount] = useState(false);
+
   // Redirect if cart empty
   useEffect(() => {
     if (items.length === 0) {
@@ -54,6 +59,31 @@ export default function CheckoutPage() {
 
   const set = (key: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  const applyDiscount = async () => {
+    if (!discountCode.trim()) return;
+    setApplyingDiscount(true);
+    setDiscountError(null);
+    try {
+      const res = await fetch("/api/discounts/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: discountCode, orderTotal: subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setDiscountError(data.error ?? "Invalid code");
+        setDiscountApplied(null);
+      } else {
+        setDiscountApplied(data);
+        setDiscountError(null);
+      }
+    } catch {
+      setDiscountError("Could not apply code. Please try again.");
+    } finally {
+      setApplyingDiscount(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +113,7 @@ export default function CheckoutPage() {
             variantLabel: i.variantLabel,
             imageUrl: i.imageUrl,
           })),
+          discountCode: discountApplied?.code ?? undefined,
         }),
       });
 
@@ -318,7 +349,7 @@ export default function CheckoutPage() {
                 opacity: submitting ? 0.7 : 1,
               }}
             >
-              {submitting ? "Processing…" : `Pay ${formatPrice(subtotal)}`}
+              {submitting ? "Processing…" : `Pay ${formatPrice(discountApplied?.finalTotal ?? subtotal)}`}
             </button>
 
             <p style={{
@@ -440,6 +471,54 @@ export default function CheckoutPage() {
                 {formatPrice(subtotal)}
               </span>
             </div>
+
+            {/* Discount code */}
+            <div style={{ marginBottom: "1rem" }}>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <input
+                  type="text"
+                  placeholder="Discount code"
+                  value={discountCode}
+                  onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountApplied(null); setDiscountError(null); }}
+                  style={{
+                    flex: 1, padding: "0.625rem 0.875rem",
+                    border: `1px solid ${discountApplied ? "#16A34A" : "var(--color-gray-200)"}`,
+                    background: "var(--color-white)", color: "var(--color-black)",
+                    fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.75rem",
+                    letterSpacing: "0.08em", textTransform: "uppercase",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={applyDiscount}
+                  disabled={applyingDiscount || !discountCode.trim()}
+                  style={{
+                    padding: "0.625rem 1.25rem", background: "var(--color-primary)", color: "#fff",
+                    border: "none", cursor: "pointer", fontFamily: "var(--font-montserrat), sans-serif",
+                    fontSize: "0.5625rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600,
+                    opacity: applyingDiscount || !discountCode.trim() ? 0.5 : 1,
+                  }}
+                >{applyingDiscount ? "..." : "Apply"}</button>
+              </div>
+              {discountError && (
+                <p style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.625rem", color: "var(--color-error, #EF4444)", marginTop: "0.375rem" }}>
+                  {discountError}
+                </p>
+              )}
+              {discountApplied && (
+                <p style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.625rem", color: "#16A34A", marginTop: "0.375rem" }}>
+                  ✓ {discountApplied.code} applied — saving {formatPrice(discountApplied.discountAmount)}
+                </p>
+              )}
+            </div>
+            {/* Show discount line in summary if applied */}
+            {discountApplied && (
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                <span style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.75rem", color: "#16A34A" }}>Discount ({discountApplied.code})</span>
+                <span style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.75rem", color: "#16A34A" }}>−{formatPrice(discountApplied.discountAmount)}</span>
+              </div>
+            )}
+
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.25rem" }}>
               <span style={{
                 fontFamily: "var(--font-montserrat), sans-serif",
@@ -475,7 +554,7 @@ export default function CheckoutPage() {
                 fontWeight: 300,
                 color: "var(--color-black)",
               }}>
-                {formatPrice(subtotal)}
+                {formatPrice(discountApplied?.finalTotal ?? subtotal)}
               </span>
             </div>
           </div>

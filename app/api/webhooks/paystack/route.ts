@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/auditLog";
+import { sendOrderConfirmation } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
@@ -60,6 +61,76 @@ export async function POST(req: NextRequest) {
         where: { id: order.id },
         data: { paymentStatus: "PAID", status: "PROCESSING" },
       });
+
+      // Decrement stock for each purchased item
+      const orderItems = await prisma.orderItem.findMany({
+        where: { orderId: order.id },
+        select: { productVariantId: true, quantity: true },
+      });
+
+      if (orderItems.length > 0) {
+        await prisma.$transaction(
+          orderItems.map(item =>
+            prisma.productVariant.update({
+              where: { id: item.productVariantId },
+              data: { stock: { decrement: item.quantity } },
+            })
+          )
+        );
+      }
+
+      logAudit({
+        action: "PAYMENT_RECEIVED",
+        category: "payment",
+        entityType: "Order",
+        entityId: order.id,
+        details: { reference, amount, itemsDecremented: orderItems.length },
+        ipAddress: req.headers.get("x-forwarded-for") ?? undefined,
+      });
+
+      // Send order confirmation email (fire-and-forget)
+      try {
+        const fullOrder = await prisma.order.findUnique({
+          where: { id: order.id },
+          select: {
+            id: true, email: true, totalAmount: true, discountCode: true,
+            discountAmount: true, shippingAddress: true,
+            items: {
+              select: {
+                quantity: true, unitPrice: true,
+                productSnapshot: true,
+                productVariant: { select: { optionLabel: true } },
+              },
+            },
+          },
+        });
+
+        if (fullOrder) {
+          const addr = fullOrder.shippingAddress as Record<string, string>;
+          sendOrderConfirmation({
+            orderId:       fullOrder.id,
+            customerEmail: fullOrder.email,
+            customerName:  addr.firstName ? `${addr.firstName} ${addr.lastName ?? ""}`.trim() : undefined,
+            items: fullOrder.items.map(i => ({
+              name:      (i.productSnapshot as Record<string, string>)?.name ?? "Product",
+              variant:   i.productVariant.optionLabel,
+              quantity:  i.quantity,
+              unitPrice: i.unitPrice,
+            })),
+            subtotal:        fullOrder.totalAmount + fullOrder.discountAmount,
+            discountCode:    fullOrder.discountCode ?? undefined,
+            discountAmount:  fullOrder.discountAmount,
+            totalAmount:     fullOrder.totalAmount,
+            shippingAddress: {
+              line1:   addr.address  ?? addr.line1 ?? "",
+              city:    addr.city     ?? "",
+              country: addr.country  ?? "Ghana",
+            },
+          }).catch(err => console.error("[email] Order confirmation failed:", err));
+        }
+      } catch (emailErr) {
+        console.error("[email] Failed to fetch order for email:", emailErr);
+      }
     }
   }
 

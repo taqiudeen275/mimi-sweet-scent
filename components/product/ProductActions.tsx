@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/cart-context";
 import { formatPrice } from "@/lib/utils";
 import { VariantSelector } from "./VariantSelector";
@@ -34,6 +34,67 @@ export function ProductActions({
   const [selected, setSelected] = useState<Variant>(variants[0]);
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+
+  // Wishlist state
+  const [wishlisted, setWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlistToast, setWishlistToast] = useState<string | null>(null);
+
+  // Check if current variant is in wishlist on mount or when variant changes
+  useEffect(() => {
+    let cancelled = false;
+    async function checkWishlist() {
+      try {
+        const res = await fetch("/api/wishlist");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const items: { productVariant: { id: string } }[] = data.items ?? [];
+        setWishlisted(items.some(i => i.productVariant.id === selected.id));
+      } catch {
+        // not logged in or error — ignore
+      }
+    }
+    checkWishlist();
+    return () => { cancelled = true; };
+  }, [selected.id]);
+
+  function showWishlistToast(msg: string) {
+    setWishlistToast(msg);
+    setTimeout(() => setWishlistToast(null), 2000);
+  }
+
+  async function handleWishlistToggle() {
+    if (wishlistLoading) return;
+    setWishlistLoading(true);
+    try {
+      if (wishlisted) {
+        const res = await fetch(`/api/wishlist?variantId=${selected.id}`, { method: "DELETE" });
+        if (res.ok) {
+          setWishlisted(false);
+          showWishlistToast("Removed from wishlist");
+        } else if (res.status === 401) {
+          showWishlistToast("Sign in to manage your wishlist");
+        }
+      } else {
+        const res = await fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId, productVariantId: selected.id }),
+        });
+        if (res.ok) {
+          setWishlisted(true);
+          showWishlistToast("Saved to wishlist");
+        } else if (res.status === 401) {
+          showWishlistToast("Sign in to save to wishlist");
+        }
+      }
+    } catch {
+      showWishlistToast("Something went wrong");
+    } finally {
+      setWishlistLoading(false);
+    }
+  }
 
   if (!selected) return null;
 
@@ -181,6 +242,60 @@ export function ProductActions({
         >
           {adding ? "Added ✓" : inStock ? "Add to Bag" : "Out of Stock"}
         </button>
+      </div>
+
+      {/* Wishlist toggle */}
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={handleWishlistToggle}
+          disabled={wishlistLoading}
+          style={{
+            width: "100%",
+            height: "44px",
+            background: "none",
+            border: "1px solid var(--color-gray-200)",
+            cursor: wishlistLoading ? "default" : "pointer",
+            fontFamily: "var(--font-montserrat), sans-serif",
+            fontSize: "0.6875rem",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: wishlisted ? "var(--color-primary)" : "var(--color-gray-600)",
+            fontWeight: 500,
+            transition: "color 150ms ease, border-color 150ms ease",
+            borderColor: wishlisted ? "var(--color-primary)" : "var(--color-gray-200)",
+            opacity: wishlistLoading ? 0.6 : 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+          }}
+        >
+          <span style={{ fontSize: "1rem", lineHeight: 1 }}>
+            {wishlisted ? "♥" : "♡"}
+          </span>
+          {wishlisted ? "Saved to Wishlist" : "Save to Wishlist"}
+        </button>
+
+        {/* Inline toast */}
+        {wishlistToast && (
+          <div style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            left: 0,
+            right: 0,
+            background: "var(--color-black)",
+            color: "var(--color-white)",
+            padding: "0.5rem 0.75rem",
+            fontFamily: "var(--font-montserrat), sans-serif",
+            fontSize: "0.625rem",
+            letterSpacing: "0.08em",
+            textAlign: "center",
+            zIndex: 10,
+            pointerEvents: "none",
+          }}>
+            {wishlistToast}
+          </div>
+        )}
       </div>
 
       {/* Stock warning */}

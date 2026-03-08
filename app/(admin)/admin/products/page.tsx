@@ -183,9 +183,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                       )}
                       <div>
                         <a
-                          href={`/product/${product.slug}`}
-                          target="_blank"
-                          rel="noreferrer"
+                          href={`/admin/products/${product.id}`}
                           style={{
                             fontFamily: "var(--font-cormorant), Georgia, serif",
                             fontSize: "1rem",
@@ -404,7 +402,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
               {/* Info */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
-                  <a href={`/product/${product.slug}`} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "1rem", color: "var(--color-black)", textDecoration: "none", lineHeight: 1.3 }}>
+                  <a href={`/admin/products/${product.id}`} style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "1rem", color: "var(--color-black)", textDecoration: "none", lineHeight: 1.3 }}>
                     {product.name}
                   </a>
                   <div style={{ display: "flex", gap: "0.25rem", flexShrink: 0 }}>

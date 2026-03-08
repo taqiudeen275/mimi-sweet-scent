@@ -1,7 +1,13 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ImageGallery } from "@/components/product/ImageGallery";
 import { ProductActions } from "@/components/product/ProductActions";
+import { ProductReviews } from "@/components/product/ProductReviews";
+import { TrackView } from "@/components/product/TrackView";
+import { RecentlyViewed } from "@/components/product/RecentlyViewed";
+import { formatPrice } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -22,12 +28,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await prisma.product.findUnique({
     where: { slug },
-    select: { name: true, seoTitle: true, seoDesc: true, tagline: true },
+    select: {
+      name: true, description: true, seoTitle: true, seoDesc: true, tagline: true,
+      images: { take: 1, select: { url: true, altText: true }, orderBy: { position: "asc" } },
+      variants: { take: 1, select: { price: true } },
+    },
   });
-  if (!product) return {};
+
+  if (!product) return { title: "Product Not Found" };
+
+  const title       = product.seoTitle  ?? product.name;
+  const description = product.seoDesc   ?? product.tagline ?? product.description ?? "";
+  const imageUrl    = product.images[0]?.url ?? null;
+  const price       = product.variants[0]?.price;
+  const siteUrl     = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mimissweetscent.com";
+
   return {
-    title: product.seoTitle ?? product.name,
-    description: product.seoDesc ?? product.tagline ?? undefined,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type:     "website",
+      url:      `${siteUrl}/product/${slug}`,
+      siteName: "Mimi's Sweet Scent",
+      ...(imageUrl ? {
+        images: [{ url: imageUrl, width: 1200, height: 630, alt: product.images[0]?.altText ?? product.name }],
+      } : {}),
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title,
+      description,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
+    },
+    ...(price ? {
+      other: {
+        "product:price:amount":   String(price / 100),
+        "product:price:currency": "GHS",
+      },
+    } : {}),
   };
 }
 
@@ -41,21 +81,31 @@ export default async function ProductPage({ params }: Props) {
       images: { orderBy: { position: "asc" } },
       fragranceNotes: true,
       collection: { select: { name: true, slug: true } },
-      reviews: {
-        include: { user: { select: { name: true } } },
-        orderBy: { createdAt: "desc" },
-        take: 6,
-      },
     },
   });
 
   if (!product) notFound();
 
+  // Related products: same productType, excluding current, active only, up to 4
+  const relatedProducts = await prisma.product.findMany({
+    where: {
+      productType: product.productType,
+      status: "ACTIVE",
+      slug: { not: slug },
+    },
+    take: 4,
+    select: {
+      id: true, name: true, slug: true, tagline: true,
+      images: { take: 1, select: { url: true, altText: true }, orderBy: { position: "asc" } },
+      variants: {
+        take: 1,
+        select: { price: true, compareAtPrice: true },
+        orderBy: { price: "asc" },
+      },
+    },
+  });
+
   const mainImageUrl = product.images[0]?.url ?? "https://images.unsplash.com/photo-1541643600914-78b084683702?w=800";
-  const avgRating =
-    product.reviews.length > 0
-      ? product.reviews.reduce((s, r) => s + r.rating, 0) / product.reviews.length
-      : null;
 
   const topNotes = product.fragranceNotes.filter((n) => n.type === "TOP");
   const heartNotes = product.fragranceNotes.filter((n) => n.type === "HEART");
@@ -77,6 +127,13 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <main style={{ background: "var(--color-white)" }}>
+      <TrackView
+        id={product.id}
+        slug={product.slug}
+        name={product.name}
+        price={product.variants[0]?.price ?? 0}
+        imageUrl={product.images[0]?.url ?? null}
+      />
       <style>{`
         @media (max-width: 768px) {
           .pdp-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
@@ -169,26 +226,6 @@ export default async function ProductPage({ params }: Props) {
               </p>
             )}
           </div>
-
-          {avgRating !== null && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <div style={{ display: "flex", gap: "2px" }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <svg key={s} width="12" height="12" viewBox="0 0 24 24" fill={s <= Math.round(avgRating) ? "var(--color-primary)" : "none"} stroke="var(--color-primary)" strokeWidth="1.5">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                ))}
-              </div>
-              <span style={{
-                fontFamily: "var(--font-montserrat), sans-serif",
-                fontSize: "0.6875rem",
-                color: "var(--color-gray-600)",
-                letterSpacing: "0.05em",
-              }}>
-                {avgRating.toFixed(1)} ({product.reviews.length} review{product.reviews.length !== 1 ? "s" : ""})
-              </span>
-            </div>
-          )}
 
           {product.description && (
             <p style={{
@@ -296,70 +333,135 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </div>
 
-      {product.reviews.length > 0 && (
+      {/* Reviews — dynamic client component (supports new review submission) */}
+      <section style={{
+        borderTop: "1px solid var(--color-gray-200)",
+        background: "var(--color-cream)",
+        padding: "4rem 2rem",
+      }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <ProductReviews productId={product.id} />
+        </div>
+      </section>
+
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
         <section style={{
           borderTop: "1px solid var(--color-gray-200)",
-          background: "var(--color-cream)",
           padding: "4rem 2rem",
         }}>
           <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+            <p style={{
+              fontFamily: "var(--font-montserrat), sans-serif",
+              fontSize: "0.5625rem",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--color-primary)",
+              marginBottom: "0.5rem",
+              fontWeight: 600,
+            }}>
+              {product.productType === "PERFUME" ? "From the Collection" : "Complete the Look"}
+            </p>
             <h2 style={{
               fontFamily: "var(--font-cormorant), Georgia, serif",
               fontSize: "2rem",
-              fontWeight: 400,
+              fontWeight: 300,
               color: "var(--color-black)",
-              marginBottom: "2.5rem",
+              margin: "0 0 2.5rem",
             }}>
-              Customer Reviews
+              You May Also Like
             </h2>
             <div style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "1.5rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "2rem",
             }}>
-              {product.reviews.map((review) => (
-                <div key={review.id} style={{
-                  background: "var(--color-white)",
-                  padding: "1.5rem",
-                }}>
-                  <div style={{ display: "flex", gap: "2px", marginBottom: "0.75rem" }}>
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <svg key={s} width="11" height="11" viewBox="0 0 24 24" fill={s <= review.rating ? "var(--color-primary)" : "none"} stroke="var(--color-primary)" strokeWidth="1.5">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                      </svg>
-                    ))}
-                  </div>
-                  {review.body && (
-                    <p style={{
-                      fontFamily: "var(--font-cormorant), Georgia, serif",
-                      fontSize: "1rem",
-                      lineHeight: 1.6,
-                      color: "var(--color-black)",
-                      fontStyle: "italic",
-                      marginBottom: "0.75rem",
+              {relatedProducts.map((related) => {
+                const relatedPrice = related.variants[0]?.price;
+                const relatedCompare = related.variants[0]?.compareAtPrice;
+                const relatedImage = related.images[0];
+                return (
+                  <Link
+                    key={related.id}
+                    href={`/product/${related.slug}`}
+                    style={{ textDecoration: "none", color: "inherit", display: "block", background: "var(--color-white)" }}
+                    className="product-card"
+                  >
+                    <div style={{
+                      position: "relative",
+                      aspectRatio: "3/4",
+                      overflow: "hidden",
+                      background: "var(--color-cream)",
                     }}>
-                      &ldquo;{review.body}&rdquo;
-                    </p>
-                  )}
-                  <p style={{
-                    fontFamily: "var(--font-montserrat), sans-serif",
-                    fontSize: "0.6875rem",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "var(--color-gray-600)",
-                    margin: 0,
-                  }}>
-                    {review.user.name ?? "Anonymous"}
-                    {review.verified && (
-                      <span style={{ marginLeft: "0.5rem", color: "var(--color-primary)" }}>{"\u2713"} Verified</span>
-                    )}
-                  </p>
-                </div>
-              ))}
+                      {relatedImage ? (
+                        <Image
+                          src={relatedImage.url}
+                          alt={relatedImage.altText ?? related.name}
+                          fill
+                          className="product-card-image"
+                          style={{ objectFit: "cover" }}
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                      ) : (
+                        <div style={{ position: "absolute", inset: 0, background: "var(--color-gray-200)" }} />
+                      )}
+                    </div>
+                    <div style={{ padding: "1rem 0 1.5rem" }}>
+                      <h3 style={{
+                        fontFamily: "var(--font-cormorant), Georgia, serif",
+                        fontSize: "1.125rem",
+                        fontWeight: 400,
+                        color: "var(--color-black)",
+                        lineHeight: 1.3,
+                        margin: 0,
+                      }}>
+                        {related.name}
+                      </h3>
+                      {related.tagline && (
+                        <p style={{
+                          fontFamily: "var(--font-cormorant), Georgia, serif",
+                          fontSize: "0.9375rem",
+                          fontStyle: "italic",
+                          color: "var(--color-gray-600)",
+                          marginTop: "0.25rem",
+                          marginBottom: 0,
+                        }}>
+                          {related.tagline}
+                        </p>
+                      )}
+                      {relatedPrice !== undefined && (
+                        <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginTop: "0.5rem" }}>
+                          <span style={{
+                            fontFamily: "var(--font-cormorant), Georgia, serif",
+                            fontSize: "1rem",
+                            fontWeight: 300,
+                            color: "var(--color-black)",
+                          }}>
+                            {formatPrice(relatedPrice)}
+                          </span>
+                          {relatedCompare && (
+                            <span style={{
+                              fontFamily: "var(--font-cormorant), Georgia, serif",
+                              fontSize: "0.875rem",
+                              fontWeight: 300,
+                              color: "var(--color-gray-600)",
+                              textDecoration: "line-through",
+                            }}>
+                              {formatPrice(relatedCompare)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
+
+      <RecentlyViewed excludeId={product.id} />
     </main>
   );
 }

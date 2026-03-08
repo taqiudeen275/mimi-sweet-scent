@@ -214,7 +214,7 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
         body: JSON.stringify(payload),
       });
       const data = await res.json() as { id?: string; error?: string };
-      if (!res.ok) { setError(data.error ?? "Save failed."); return; }
+      if (!res.ok) { setError(data.error ?? "Something went wrong. Please try again."); return; }
       setSaved(true);
       setTimeout(() => router.push("/admin/products"), 800);
     } catch { setError("Network error. Please try again."); }

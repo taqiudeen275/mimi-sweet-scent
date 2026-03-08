@@ -46,11 +46,31 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 
 // ─── PUT /api/admin/products/[id] ─────────────────────────────────────────────
 
+function friendlyValidationError(error: z.ZodError): string {
+  const messages: string[] = [];
+  for (const issue of error.issues) {
+    const path = issue.path.join(".");
+    if (issue.message && !issue.message.startsWith("Invalid")) {
+      if (!messages.includes(issue.message)) messages.push(issue.message);
+      continue;
+    }
+    if (path === "name" || path.endsWith(".name")) messages.push("Product name is required.");
+    else if (path === "slug") messages.push("URL slug can only contain lowercase letters, numbers, and hyphens.");
+    else if (path === "variants") messages.push("Please add at least one variant.");
+    else if (path.startsWith("variants") && path.endsWith("sku")) messages.push("Each variant needs a SKU.");
+    else if (path.startsWith("variants") && path.endsWith("price")) messages.push("Each variant needs a valid price.");
+    else if (path === "productType") messages.push("Please select a product type.");
+    else if (path === "status") messages.push("Please select a product status.");
+    else messages.push("Please check all required fields and try again.");
+  }
+  return [...new Set(messages)].join(" ");
+}
+
 const variantUpsertSchema = z.object({
   id:             z.string().optional(),
   optionLabel:    z.string().default("Default"),
-  sku:            z.string().min(1),
-  price:          z.number().int().min(0),
+  sku:            z.string().min(1, "Each variant needs a SKU."),
+  price:          z.number().int().min(0, "Price must be 0 or more."),
   compareAtPrice: z.number().int().min(0).optional().nullable(),
   stock:          z.number().int().min(0).default(0),
   weight:         z.number().optional(),
@@ -111,7 +131,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
   const body   = await req.json();
   const parsed = updateProductSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: friendlyValidationError(parsed.error) }, { status: 400 });
   }
 
   const { variants, images, fragranceNotes, ...data } = parsed.data;

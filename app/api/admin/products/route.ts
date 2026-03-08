@@ -68,47 +68,70 @@ export async function GET(req: NextRequest) {
 
 const variantSchema = z.object({
   optionLabel:    z.string().default("Default"),
-  sku:            z.string().min(1),
-  price:          z.number().int().min(0),
-  compareAtPrice: z.number().int().min(0).optional(),
+  sku:            z.string().min(1, "Each variant needs a SKU."),
+  price:          z.number().int().min(0, "Price must be 0 or more."),
+  compareAtPrice: z.number().int().min(0).optional().nullable(),
   stock:          z.number().int().min(0).default(0),
   weight:         z.number().optional(),
 });
 
 const imageSchema = z.object({
-  url:     z.string().min(1),
-  altText: z.string().optional(),
+  url:      z.string().min(1),
+  altText:  z.string().optional().nullable(),
   position: z.number().int().default(0),
 });
 
 const fragranceNoteSchema = z.object({
   type: z.enum(["TOP", "HEART", "BASE"]),
-  name: z.string().min(1),
-  icon: z.string().optional(),
+  name: z.string().min(1, "Fragrance note name cannot be empty."),
+  icon: z.string().optional().nullable(),
 });
 
 const createProductSchema = z.object({
-  name:            z.string().min(1),
-  slug:            z.string().min(1).regex(/^[a-z0-9-]+$/),
-  description:     z.string().optional(),
+  name:            z.string().min(1, "Product name is required."),
+  slug:            z.string().min(1).regex(/^[a-z0-9-]+$/, "URL slug can only contain lowercase letters, numbers, and hyphens."),
+  description:     z.string().optional().nullable(),
   productType:     z.enum(["PERFUME", "JEWELRY"]),
-  concentration:   z.enum(["EDP", "EDT", "PARFUM"]).optional(),
-  genderTag:       z.enum(["WOMEN", "MEN", "UNISEX"]).optional(),
-  material:        z.string().optional(),
-  stone:           z.string().optional(),
-  tagline:         z.string().optional(),
-  sillage:         z.string().optional(),
-  longevity:       z.string().optional(),
-  seasonRec:       z.string().optional(),
-  perfumerProfile: z.string().optional(),
-  collectionId:    z.string().optional(),
+  concentration:   z.enum(["EDP", "EDT", "PARFUM"]).optional().nullable(),
+  genderTag:       z.enum(["WOMEN", "MEN", "UNISEX"]).optional().nullable(),
+  material:        z.string().optional().nullable(),
+  stone:           z.string().optional().nullable(),
+  tagline:         z.string().optional().nullable(),
+  sillage:         z.string().optional().nullable(),
+  longevity:       z.string().optional().nullable(),
+  seasonRec:       z.string().optional().nullable(),
+  perfumerProfile: z.string().optional().nullable(),
+  collectionId:    z.string().optional().nullable(),
   status:          z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).default("DRAFT"),
-  seoTitle:        z.string().optional(),
-  seoDesc:         z.string().optional(),
-  variants:        z.array(variantSchema).min(1),
+  seoTitle:        z.string().optional().nullable(),
+  seoDesc:         z.string().optional().nullable(),
+  variants:        z.array(variantSchema).min(1, "Please add at least one variant with a price."),
   images:          z.array(imageSchema).optional().default([]),
   fragranceNotes:  z.array(fragranceNoteSchema).optional().default([]),
 });
+
+function friendlyValidationError(error: z.ZodError): string {
+  const messages: string[] = [];
+  for (const issue of error.issues) {
+    const path = issue.path.join(".");
+    // Use the custom message if it's already human-readable
+    if (issue.message && !issue.message.startsWith("Invalid")) {
+      if (!messages.includes(issue.message)) messages.push(issue.message);
+      continue;
+    }
+    // Map field paths to friendly labels
+    if (path === "name" || path.endsWith(".name")) messages.push("Product name is required.");
+    else if (path === "slug") messages.push("URL slug can only contain lowercase letters, numbers, and hyphens.");
+    else if (path === "variants") messages.push("Please add at least one variant.");
+    else if (path.startsWith("variants") && path.endsWith("sku")) messages.push("Each variant needs a SKU.");
+    else if (path.startsWith("variants") && path.endsWith("price")) messages.push("Each variant needs a valid price.");
+    else if (path === "productType") messages.push("Please select a product type.");
+    else if (path === "status") messages.push("Please select a product status.");
+    else messages.push("Please check all required fields and try again.");
+  }
+  // Deduplicate
+  return [...new Set(messages)].join(" ");
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -121,7 +144,7 @@ export async function POST(req: NextRequest) {
   const body   = await req.json();
   const parsed = createProductSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: friendlyValidationError(parsed.error) }, { status: 400 });
   }
 
   const { variants, images, fragranceNotes, ...data } = parsed.data;

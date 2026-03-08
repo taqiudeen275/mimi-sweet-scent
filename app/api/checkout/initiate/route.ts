@@ -25,6 +25,7 @@ const checkoutSchema = z.object({
     phone:   z.string().optional(),
   }),
   items: z.array(cartItemSchema).min(1),
+  discountCode: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { email, phone, provider, shippingAddress, items } = parsed.data;
+  const { email, phone, provider, shippingAddress, items, discountCode: rawDiscountCode } = parsed.data;
 
   // Verify variants exist and fetch canonical prices from DB
   const variantIds = items.map((i) => i.variantId);
@@ -73,11 +74,43 @@ export async function POST(req: NextRequest) {
     return sum + dbV.price * item.quantity;
   }, 0);
 
+  // Apply discount code if provided
+  let discountAmount = 0;
+  let appliedCode: string | null = null;
+
+  if (rawDiscountCode) {
+    const code = rawDiscountCode.trim().toUpperCase();
+    const discount = await prisma.discountCode.findUnique({ where: { code } });
+
+    if (discount && discount.active &&
+        !(discount.expiresAt && new Date() > discount.expiresAt) &&
+        !(discount.usageLimit != null && discount.usageCount >= discount.usageLimit) &&
+        !(discount.minOrderValue != null && totalAmount < discount.minOrderValue)
+    ) {
+      if (discount.type === "PERCENTAGE") {
+        discountAmount = Math.round(totalAmount * (discount.value / 100));
+      } else if (discount.type === "FIXED") {
+        discountAmount = Math.min(discount.value, totalAmount);
+      }
+      appliedCode = code;
+
+      // Increment usage count
+      await prisma.discountCode.update({
+        where: { code },
+        data: { usageCount: { increment: 1 } },
+      });
+    }
+  }
+
+  const finalAmount = totalAmount - discountAmount;
+
   // Create order in DB (PENDING until webhook confirms)
   const order = await prisma.order.create({
     data: {
       email,
-      totalAmount,
+      totalAmount: finalAmount,
+      discountCode:   appliedCode ?? undefined,
+      discountAmount: discountAmount,
       shippingAddress,
       userId: session?.user?.id ?? null,
       status: "PENDING",
@@ -110,7 +143,7 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       email,
-      amount: totalAmount,
+      amount: finalAmount,
       mobile_money: { phone, provider },
       metadata: { orderId: order.id },
     }),
