@@ -263,7 +263,10 @@ export function Footer() {
           © {new Date().getFullYear()} Mimi&apos;s Sweet Scent. All rights reserved.
         </p>
         <p style={{ fontSize: "0.6875rem", color: "var(--footer-text-dim)" }}>
-          Secured by Paystack
+          Secured payment by Paystack
+        </p>
+        <p style={{ fontSize: "0.6875rem", color: "var(--footer-text-dim)", letterSpacing: "0.08em" }}>
+          Built by <span style={{ fontWeight: 600 }}>ATS TECH</span>
         </p>
       </div>
     </footer>
