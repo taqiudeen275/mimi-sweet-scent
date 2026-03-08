@@ -23,7 +23,7 @@ export default async function WishlistsPage() {
     prisma.wishlistItem.count(),
   ]);
 
-  const productIds = grouped.map(g => g.productId);
+  const productIds = grouped.map((g: (typeof grouped)[number]) => g.productId);
   const products = await prisma.product.findMany({
     where: { id: { in: productIds } },
     select: {
@@ -33,7 +33,7 @@ export default async function WishlistsPage() {
     },
   });
 
-  const items = grouped.map(g => ({
+  const items = grouped.map((g: (typeof grouped)[number]) => ({
     productId: g.productId,
     count: g._count.productId,
     product: products.find(p => p.id === g.productId) ?? null,

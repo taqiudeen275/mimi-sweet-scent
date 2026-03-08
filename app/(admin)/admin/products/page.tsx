@@ -134,11 +134,11 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
             </tr>
           </thead>
           <tbody>
-            {products.map((product, i) => {
-              const prices     = product.variants.map((v) => v.price);
+            {products.map((product: (typeof products)[number], i: number) => {
+              const prices     = product.variants.map((v: (typeof product.variants)[number]) => v.price);
               const minPrice   = prices.length ? Math.min(...prices) : null;
               const maxPrice   = prices.length ? Math.max(...prices) : null;
-              const totalStock = product.variants.reduce((s, v) => s + v.stock, 0);
+              const totalStock = product.variants.reduce((s: number, v: (typeof product.variants)[number]) => s + v.stock, 0);
               const s          = STATUS_STYLE[product.status] ?? STATUS_STYLE.DRAFT;
               const isEven     = i % 2 === 1;
 
@@ -379,11 +379,11 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
           <p style={{ padding: "3rem", textAlign: "center", fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.8125rem", color: "#9CA3AF" }}>
             {q || type || status ? "No products match your filters" : "No products yet — create your first one"}
           </p>
-        ) : products.map((product, i) => {
-          const prices     = product.variants.map((v) => v.price);
+        ) : products.map((product: (typeof products)[number], i: number) => {
+          const prices     = product.variants.map((v: (typeof product.variants)[number]) => v.price);
           const minPrice   = prices.length ? Math.min(...prices) : null;
           const maxPrice   = prices.length ? Math.max(...prices) : null;
-          const totalStock = product.variants.reduce((s, v) => s + v.stock, 0);
+          const totalStock = product.variants.reduce((s: number, v: (typeof product.variants)[number]) => s + v.stock, 0);
           const s          = STATUS_STYLE[product.status] ?? STATUS_STYLE.DRAFT;
           return (
             <div key={product.id} style={{

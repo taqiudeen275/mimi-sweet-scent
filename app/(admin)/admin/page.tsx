@@ -148,7 +148,7 @@ export default async function AdminDashboardPage() {
             <tbody>
               {recentOrders.length === 0 ? (
                 <tr><td colSpan={6} style={{ padding: "2rem 1.5rem", textAlign: "center", fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.8125rem", color: "var(--color-gray-400)" }}>No orders yet</td></tr>
-              ) : recentOrders.map((order, i) => (
+              ) : recentOrders.map((order: (typeof recentOrders)[number], i: number) => (
                 <tr key={order.id} style={{ borderBottom: i < recentOrders.length - 1 ? "1px solid var(--color-gray-200)" : "none" }}>
                   <td style={{ padding: "0.875rem 1.5rem" }}>
                     <span style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.75rem", color: "var(--color-black)", fontWeight: 500 }}>#{order.id.slice(-8).toUpperCase()}</span>
@@ -180,7 +180,7 @@ export default async function AdminDashboardPage() {
         <div className="admin-orders-cards" style={{ display: "none", flexDirection: "column", gap: 0 }}>
           {recentOrders.length === 0 ? (
             <p style={{ padding: "2rem", textAlign: "center", fontFamily: "var(--font-montserrat), sans-serif", fontSize: "0.8125rem", color: "var(--color-gray-400)" }}>No orders yet</p>
-          ) : recentOrders.map((order, i) => (
+          ) : recentOrders.map((order: (typeof recentOrders)[number], i: number) => (
             <div key={order.id} style={{
               padding: "1rem 1.25rem",
               borderBottom: i < recentOrders.length - 1 ? "1px solid var(--color-gray-200)" : "none",
