@@ -50,11 +50,13 @@ export async function POST(req: NextRequest) {
   const { email, phone, provider, shippingAddress, items, discountCode: rawDiscountCode } = parsed.data;
 
   // Verify variants exist and fetch canonical prices from DB
-  const variantIds = items.map((i) => i.variantId);
+  type CartItem = (typeof items)[number];
+  const variantIds = items.map((i: CartItem) => i.variantId);
   const dbVariants = await prisma.productVariant.findMany({
     where: { id: { in: variantIds } },
     select: { id: true, price: true, stock: true, product: { select: { id: true } } },
   });
+  type DBVariant = (typeof dbVariants)[number];
 
   if (dbVariants.length !== variantIds.length) {
     return NextResponse.json({ error: "One or more items are no longer available." }, { status: 400 });
@@ -62,15 +64,15 @@ export async function POST(req: NextRequest) {
 
   // Check stock
   for (const item of items) {
-    const dbV = dbVariants.find((v) => v.id === item.variantId)!;
+    const dbV = dbVariants.find((v: DBVariant) => v.id === item.variantId)!;
     if (dbV.stock < item.quantity) {
       return NextResponse.json({ error: `Insufficient stock for one or more items.` }, { status: 400 });
     }
   }
 
   // Calculate total using DB prices (not client-submitted prices)
-  const totalAmount = dbVariants.reduce((sum, dbV) => {
-    const item = items.find((i) => i.variantId === dbV.id)!;
+  const totalAmount = dbVariants.reduce((sum: number, dbV: DBVariant) => {
+    const item = items.find((i: CartItem) => i.variantId === dbV.id)!;
     return sum + dbV.price * item.quantity;
   }, 0);
 
@@ -116,8 +118,8 @@ export async function POST(req: NextRequest) {
       status: "PENDING",
       paymentStatus: "UNPAID",
       items: {
-        create: items.map((item) => {
-          const dbV = dbVariants.find((v) => v.id === item.variantId)!;
+        create: items.map((item: CartItem) => {
+          const dbV = dbVariants.find((v: DBVariant) => v.id === item.variantId)!;
           return {
             productVariantId: item.variantId,
             quantity: item.quantity,
