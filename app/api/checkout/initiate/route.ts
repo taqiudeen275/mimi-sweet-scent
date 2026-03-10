@@ -29,6 +29,7 @@ const checkoutSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  try {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   const rl = checkRateLimit(`checkout:${ip}`, { max: 10, windowMs: 60 * 60 * 1000 });
   if (!rl.allowed) {
@@ -154,8 +155,8 @@ export async function POST(req: NextRequest) {
   const paystackData = await paystackRes.json();
 
   if (!paystackRes.ok || !paystackData.data?.reference) {
-    // Clean up the order if Paystack fails
-    await prisma.order.delete({ where: { id: order.id } });
+    // Clean up the order if Paystack fails (best-effort, don't throw)
+    try { await prisma.order.delete({ where: { id: order.id } }); } catch { /* ignore */ }
     return NextResponse.json(
       { error: paystackData.message ?? "Payment initiation failed" },
       { status: 502 }
@@ -174,4 +175,11 @@ export async function POST(req: NextRequest) {
     display_text: paystackData.data.display_text,
     orderId:      order.id,
   });
+  } catch (err) {
+    console.error("[checkout/initiate]", err);
+    return NextResponse.json(
+      { error: "An unexpected error occurred. Please try again." },
+      { status: 500 }
+    );
+  }
 }
